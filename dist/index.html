@@ -19,42 +19,72 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234f46e5'/><text x='50' y='68' font-size='54' font-weight='700' text-anchor='middle' fill='white' font-family='system-ui,sans-serif'>4</text></svg>">
 <style>
 /* ==========================================================================
-   四级成绩分析 — 样式系统
-   移动优先（360px 起） → 平板（≥760px）→ 桌面（≥1080px）
+   四级成绩分析 — 设计系统 v2
+   目标：更清晰的视觉层级、更合理的空间利用（平板/桌面双栏）、更顺的交互反馈
+   断点：360（小手机）→ 420 → 760（平板双栏）→ 1080（桌面）
    ========================================================================== */
 
+/* ------------------------------ 设计令牌 ------------------------------ */
 :root {
-  --brand: #4f46e5;
-  --brand-2: #7c3aed;
+  /* 品牌 */
+  --brand: #5b5bf5;
+  --brand-2: #8b5cf6;
   --brand-ink: #3730a3;
-  --c-listening: #0ea5e9;
+  --brand-soft: #eef0ff;
+
+  /* 四板块语义色（图表/徽标统一引用） */
+  --c-listening: #3b82f6;
   --c-reading: #10b981;
   --c-writing: #f59e0b;
   --c-translation: #ec4899;
 
-  --bg: #f4f5fb;
-  --bg-grad: radial-gradient(1200px 600px at 50% -10%, #e8e9ff 0%, rgba(244, 245, 251, 0) 60%);
+  /* 中性 */
+  --bg: #f6f7fb;
+  --bg-grad: radial-gradient(900px 500px at 50% -8%, #e9eaff 0%, rgba(246, 247, 251, 0) 62%);
   --card: #ffffff;
-  --card-2: #fbfbff;
-  --ink: #191c2b;
-  --ink-2: #343a4f;
-  --muted: #6c7385;
-  --line: #e7e9f2;
-  --line-2: #eff1f8;
-  --ok: #10b981;
-  --warn: #f59e0b;
-  --bad: #ef4444;
-  --shadow: 0 1px 2px rgba(25, 28, 43, .04), 0 8px 24px -12px rgba(25, 28, 43, .16);
-  --shadow-lg: 0 2px 6px rgba(25, 28, 43, .05), 0 24px 48px -20px rgba(25, 28, 43, .25);
+  --card-2: #f8f9fd;
+  --card-3: #f1f3fa;
+  --ink: #14161f;
+  --ink-2: #333849;
+  --muted: #6b7286;
+  --muted-2: #8d93a5;
+  --line: #e8eaf3;
+  --line-2: #f0f2f9;
+
+  /* 语义 */
+  --ok: #0ea672;
+  --warn: #e08b00;
+  --bad: #e5484d;
+  --ok-soft: #e7f8f1;
+  --warn-soft: #fdf3e3;
+  --bad-soft: #fdecec;
+
+  /* 阴影：分层更细，避免"发灰" */
+  --sh-1: 0 1px 2px rgba(20, 22, 31, .04);
+  --sh-2: 0 1px 2px rgba(20, 22, 31, .04), 0 4px 12px -6px rgba(20, 22, 31, .10);
+  --sh-3: 0 2px 4px rgba(20, 22, 31, .04), 0 12px 28px -12px rgba(20, 22, 31, .16);
+  --sh-pop: 0 24px 56px -20px rgba(20, 22, 31, .34);
+
+  /* 圆角 */
   --r-xs: 8px;
-  --r-sm: 12px;
-  --r: 16px;
-  --r-lg: 22px;
-  --nav-h: 62px;
-  --maxw: 860px;
+  --r-sm: 11px;
+  --r: 14px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-pill: 999px;
+
+  /* 尺寸 */
+  --nav-h: 66px;
+  --maxw: 1180px;
+  --gap: 12px;
+  --pad: 14px;
+
+  --ease: cubic-bezier(.22, .68, .36, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
           "Microsoft YaHei", "Noto Sans SC", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -62,35 +92,55 @@
     --brand: #818cf8;
     --brand-2: #a78bfa;
     --brand-ink: #c7d2fe;
-    --bg: #0d1017;
-    --bg-grad: radial-gradient(1200px 600px at 50% -10%, #1a1f3d 0%, rgba(13, 16, 23, 0) 62%);
-    --card: #151925;
-    --card-2: #191e2c;
-    --ink: #f2f4fb;
-    --ink-2: #cdd3e4;
-    --muted: #8b93a8;
-    --line: #232a3b;
-    --line-2: #1c2231;
-    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px -12px rgba(0, 0, 0, .6);
-    --shadow-lg: 0 2px 6px rgba(0, 0, 0, .35), 0 24px 48px -20px rgba(0, 0, 0, .8);
+    --brand-soft: #1b1f36;
+
+    --c-listening: #60a5fa;
+    --c-reading: #34d399;
+    --c-writing: #fbbf24;
+    --c-translation: #f472b6;
+
+    --bg: #0b0d14;
+    --bg-grad: radial-gradient(900px 520px at 50% -8%, #171b33 0%, rgba(11, 13, 20, 0) 64%);
+    --card: #13151f;
+    --card-2: #181b26;
+    --card-3: #1e2230;
+    --ink: #f2f4fa;
+    --ink-2: #c9cee0;
+    --muted: #8b92a8;
+    --muted-2: #6f7689;
+    --line: #232838;
+    --line-2: #1b1f2b;
+
+    --ok: #34d399;
+    --warn: #fbbf24;
+    --bad: #f87171;
+    --ok-soft: #10281f;
+    --warn-soft: #2a2210;
+    --bad-soft: #2b1618;
+
+    --sh-1: 0 1px 2px rgba(0, 0, 0, .4);
+    --sh-2: 0 1px 2px rgba(0, 0, 0, .4), 0 4px 14px -8px rgba(0, 0, 0, .7);
+    --sh-3: 0 2px 4px rgba(0, 0, 0, .4), 0 14px 32px -16px rgba(0, 0, 0, .85);
+    --sh-pop: 0 24px 56px -20px rgba(0, 0, 0, .95);
   }
 }
 
+/* ------------------------------ 基础 ------------------------------ */
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
 html { -webkit-text-size-adjust: 100%; }
 
 body {
   margin: 0;
   font-family: var(--font);
   font-size: 15px;
-  line-height: 1.55;
+  line-height: 1.58;
   color: var(--ink);
-  background: var(--bg) var(--bg-grad) no-repeat;
-  background-attachment: fixed;
-  min-height: 100vh;
+  background: var(--bg) var(--bg-grad) no-repeat fixed;
   min-height: 100dvh;
   overscroll-behavior-y: none;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-variant-numeric: tabular-nums;
 }
 
 h1, h2, h3, h4, p, ul, ol, figure { margin: 0; }
@@ -99,45 +149,68 @@ button { font: inherit; color: inherit; border: 0; background: none; cursor: poi
 a { color: var(--brand); }
 svg { display: block; }
 
-/* --------------------------------- 布局 --------------------------------- */
+::selection { background: color-mix(in srgb, var(--brand) 22%, transparent); }
+
+/* 焦点可见性（键盘无障碍） */
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ------------------------------ 骨架 ------------------------------ */
 .app {
   max-width: var(--maxw);
   margin: 0 auto;
   min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
 }
 
 .view {
-  flex: 1;
-  padding: 14px 14px calc(var(--nav-h) + 26px + env(safe-area-inset-bottom, 0px));
+  padding: var(--pad) var(--pad) calc(var(--nav-h) + 30px + env(safe-area-inset-bottom, 0px));
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  animation: pageIn .22s ease both;
+  gap: var(--gap);
+  animation: viewIn .26s var(--ease-out) both;
 }
 
-@keyframes pageIn {
-  from { opacity: 0; transform: translateY(6px); }
+@keyframes viewIn {
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: none; }
 }
 
-/* --------------------------------- 顶栏 --------------------------------- */
+/* 卡片入场：错峰淡入 */
+.view > section { animation: cardIn .32s var(--ease-out) both; }
+.view > section:nth-child(1) { animation-delay: .01s; }
+.view > section:nth-child(2) { animation-delay: .04s; }
+.view > section:nth-child(3) { animation-delay: .07s; }
+.view > section:nth-child(4) { animation-delay: .10s; }
+.view > section:nth-child(5) { animation-delay: .13s; }
+.view > section:nth-child(n+6) { animation-delay: .16s; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px) scale(.995); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ------------------------------ 顶栏 ------------------------------ */
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 30;
-  padding: calc(10px + env(safe-area-inset-top, 0px)) 14px 10px;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  -webkit-backdrop-filter: saturate(180%) blur(14px);
-  backdrop-filter: saturate(180%) blur(14px);
+  z-index: 40;
+  padding: calc(9px + env(safe-area-inset-top, 0px)) var(--pad) 9px;
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(16px);
+  backdrop-filter: saturate(180%) blur(16px);
   border-bottom: 1px solid transparent;
-  transition: border-color .2s;
+  transition: border-color .22s var(--ease), background .22s var(--ease);
 }
-.topbar.is-scrolled { border-bottom-color: var(--line); }
+.topbar.is-scrolled {
+  border-bottom-color: var(--line);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+}
 
 .topbar-inner {
-  max-width: calc(var(--maxw) - 28px);
+  max-width: calc(var(--maxw) - var(--pad) * 2);
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -148,30 +221,32 @@ svg { display: block; }
 .brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 
 .brand-mark {
-  width: 38px; height: 38px;
+  width: 36px; height: 36px;
   flex: none;
   display: grid; place-items: center;
-  border-radius: 12px;
-  background: linear-gradient(140deg, var(--brand), var(--brand-2));
+  border-radius: 11px;
+  background: linear-gradient(145deg, var(--brand), var(--brand-2));
   color: #fff;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: .5px;
-  box-shadow: 0 6px 16px -6px var(--brand);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -.5px;
+  box-shadow: 0 5px 14px -6px var(--brand), inset 0 1px 0 rgba(255, 255, 255, .28);
 }
 
 .brand-text { min-width: 0; }
 .brand-text h1 {
-  font-size: 16.5px;
-  font-weight: 700;
-  letter-spacing: -.2px;
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -.3px;
+  line-height: 1.25;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .brand-text p {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--muted);
+  line-height: 1.3;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -183,153 +258,183 @@ svg { display: block; }
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 10px;
-  border-radius: 999px;
+  padding: 5px 10px;
+  border-radius: var(--r-pill);
   background: var(--card);
   border: 1px solid var(--line);
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11.5px;
+  font-weight: 650;
   color: var(--ink-2);
   white-space: nowrap;
-  box-shadow: var(--shadow);
+  box-shadow: var(--sh-1);
+  transition: transform .18s var(--ease);
 }
-.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--brand); }
-.pill.big { font-variant-numeric: tabular-nums; }
-.pill.pass { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 35%, var(--line)); }
-.pill.fail { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 32%, var(--line)); }
+.pill .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: .85; }
+.pill.big {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 5px 11px;
+  letter-spacing: -.2px;
+}
+.pill.pass { color: var(--ok); border-color: color-mix(in srgb, var(--ok) 34%, var(--line)); background: var(--ok-soft); }
+.pill.fail { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 30%, var(--line)); background: var(--bad-soft); }
 
-/* --------------------------------- 卡片 --------------------------------- */
+/* ------------------------------ 卡片 ------------------------------ */
 .card {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  box-shadow: var(--shadow);
+  border-radius: var(--r-md);
+  box-shadow: var(--sh-2);
   padding: 16px;
 }
-.card.tight { padding: 14px; }
 .card.flush { padding: 0; overflow: hidden; }
+.card.pad-sm { padding: 13px; }
+.card.tinted {
+  background: linear-gradient(165deg, var(--card), var(--card-2));
+}
 
 .card-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 13px;
 }
+.card-head.tight { margin-bottom: 9px; }
+
 .card-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: -.1px;
+  letter-spacing: -.15px;
   color: var(--ink);
 }
-.card-title .ico { width: 18px; height: 18px; opacity: .9; }
-.card-sub { font-size: 12px; color: var(--muted); font-weight: 500; }
+.card-title .ico { width: 17px; height: 17px; flex: none; color: var(--brand); opacity: .95; }
+.card-sub {
+  font-size: 11.5px;
+  color: var(--muted);
+  font-weight: 550;
+  white-space: nowrap;
+  flex: none;
+}
 
+/* 区块小标题 */
 .sec-title {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
-  padding: 4px 2px 0;
-  font-size: 13px;
+  margin: 14px 0 8px;
+  font-size: 12px;
   font-weight: 700;
+  letter-spacing: .3px;
   color: var(--muted);
-  letter-spacing: .2px;
 }
-.sec-title .hint { font-weight: 500; font-size: 11.5px; color: var(--muted); opacity: .9; }
+.sec-title::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line-2);
+}
 
-/* 分区主题色 */
+/* ------------------------------ 分区主题 ------------------------------ */
 .tone-listening { --tone: var(--c-listening); }
-.tone-reading   { --tone: var(--c-reading); }
-.tone-writing   { --tone: var(--c-writing); }
+.tone-reading { --tone: var(--c-reading); }
+.tone-writing { --tone: var(--c-writing); }
 .tone-translation { --tone: var(--c-translation); }
 
-.tone-bar {
-  display: flex; align-items: center; gap: 8px;
-}
-.tone-bar.wrap { flex-wrap: wrap; gap: 6px; }
-.tone-bar.wrap > * { flex: none; white-space: nowrap; }
 .tone-chip {
-  display: inline-flex; align-items: center; gap: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 3px 9px 3px 7px;
-  border-radius: 999px;
-  background: color-mix(in srgb, var(--tone, var(--brand)) 12%, transparent);
-  color: var(--tone, var(--brand));
-  font-size: 11.5px;
+  border-radius: var(--r-pill);
+  background: color-mix(in srgb, var(--tone, var(--brand)) 13%, transparent);
+  color: color-mix(in srgb, var(--tone, var(--brand)) 82%, var(--ink));
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: .2px;
+  letter-spacing: .1px;
   white-space: nowrap;
+  flex: none;
 }
 .tone-chip::before {
-  content: ""; width: 6px; height: 6px; border-radius: 50%;
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
   background: var(--tone, var(--brand));
+  flex: none;
 }
 
-/* -------------------------------- 分段控件 ------------------------------- */
+/* ------------------------------ 分段控件 ------------------------------ */
 .seg {
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 4px;
-  padding: 4px;
-  background: var(--card-2);
-  border: 1px solid var(--line);
-  border-radius: 14px;
+  gap: 3px;
+  padding: 3px;
+  background: var(--card-3);
+  border-radius: 12px;
 }
 .seg button {
-  padding: 9px 6px;
-  border-radius: 10px;
-  font-size: 13px;
+  position: relative;
+  padding: 8px 6px;
+  border-radius: 9px;
+  font-size: 12.5px;
   font-weight: 650;
   color: var(--muted);
-  transition: background .18s, color .18s, box-shadow .18s;
-  white-space: nowrap;
+  transition: color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
 }
 .seg button[aria-selected="true"] {
   background: var(--card);
   color: var(--ink);
-  box-shadow: var(--shadow);
+  box-shadow: var(--sh-2);
 }
+.seg button:active { transform: scale(.985); }
 
-/* --------------------------------- 录入行 -------------------------------- */
+/* ------------------------------ 录入行 ------------------------------ */
 .part {
+  position: relative;
   padding: 12px 0;
-  border-top: 1px dashed var(--line);
+  border-top: 1px solid var(--line-2);
 }
-.part:first-of-type { border-top: 0; padding-top: 4px; }
+.part:first-of-type { border-top: 0; padding-top: 2px; }
 
 .part-top {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
+  min-width: 0;
 }
 .part-name {
   font-size: 13.5px;
-  font-weight: 650;
+  font-weight: 680;
   color: var(--ink);
   display: flex;
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+  line-height: 1.4;
 }
 .part-meta {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--muted);
   margin-top: 2px;
-  font-variant-numeric: tabular-nums;
+  line-height: 1.45;
 }
-.part-score {
-  text-align: right;
-  flex: none;
+.part-score { text-align: right; flex: none; }
+.part-score b {
+  font-size: 16px;
+  font-weight: 780;
+  letter-spacing: -.4px;
   font-variant-numeric: tabular-nums;
+  transition: color .2s var(--ease);
 }
-.part-score b { font-size: 15px; font-weight: 750; }
-.part-score span { font-size: 11.5px; color: var(--muted); font-weight: 500; }
+.part-score > span { font-size: 11px; color: var(--muted); font-weight: 550; }
 
-/* 步进器 */
+/* 步进器：更易点、反馈更明确 */
 .stepper {
   display: flex;
   align-items: center;
@@ -337,22 +442,39 @@ svg { display: block; }
   margin-top: 10px;
 }
 .step-btn {
-  width: 38px; height: 38px;
+  width: 40px; height: 40px;
   flex: none;
   border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--card-2);
-  color: var(--ink-2);
+  border: 1.5px solid color-mix(in srgb, var(--ink) 12%, var(--line));
+  background: var(--card);
+  color: var(--ink);
   display: grid; place-items: center;
-  font-size: 20px;
-  font-weight: 600;
+  font-size: 19px;
+  font-weight: 700;
   line-height: 1;
-  transition: transform .12s, background .16s;
   user-select: none;
   touch-action: manipulation;
+  box-shadow: var(--sh-1);
+  transition: transform .12s var(--ease), background .16s var(--ease), border-color .16s var(--ease), box-shadow .16s var(--ease), color .16s var(--ease);
 }
-.step-btn:active { transform: scale(.94); background: var(--line-2); }
-.step-btn[disabled] { opacity: .38; pointer-events: none; }
+.step-btn:hover {
+  background: color-mix(in srgb, var(--tone, var(--brand)) 7%, var(--card));
+  border-color: color-mix(in srgb, var(--tone, var(--brand)) 45%, var(--line));
+  color: var(--tone, var(--brand));
+}
+.step-btn:active {
+  transform: scale(.92);
+  background: color-mix(in srgb, var(--tone, var(--brand)) 13%, var(--card));
+  border-color: var(--tone, var(--brand));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone, var(--brand)) 12%, transparent);
+}
+.step-btn[disabled] {
+  opacity: .3;
+  pointer-events: none;
+  box-shadow: none;
+  border-color: var(--line);
+  background: var(--card-2);
+}
 
 .step-val {
   flex: 1;
@@ -363,175 +485,184 @@ svg { display: block; }
   min-width: 0;
 }
 .step-val input {
-  width: 4.2em;
+  width: 3.6em;
   min-width: 0;
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line);
   background: var(--card);
   color: var(--ink);
-  font: 700 17px/1 var(--mono);
+  font: 750 17px/1 var(--mono);
   text-align: center;
-  padding: 8px 4px;
+  padding: 7px 3px;
   border-radius: 10px;
   outline: none;
   -webkit-appearance: none;
   appearance: none;
+  transition: border-color .16s var(--ease), box-shadow .16s var(--ease), background .16s var(--ease);
 }
-.step-val input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 16%, transparent); }
+.step-val input:focus {
+  border-color: var(--tone, var(--brand));
+  background: color-mix(in srgb, var(--tone, var(--brand)) 5%, var(--card));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tone, var(--brand)) 14%, transparent);
+}
 .step-val input::-webkit-outer-spin-button,
 .step-val input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.step-val .of { font-size: 12.5px; color: var(--muted); font-weight: 600; font-variant-numeric: tabular-nums; }
+.step-val .of { font-size: 12px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 
 /* 滑杆 */
 .range {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 30px;
-  margin: 6px 0 0;
+  height: 32px;
+  margin: 4px 0 0;
   background: transparent;
   outline: none;
   touch-action: pan-y;
-}
-.range::-webkit-slider-runnable-track {
-  height: 6px;
-  border-radius: 999px;
-  background: linear-gradient(to right, var(--tone, var(--brand)) var(--fill, 0%), var(--line-2) var(--fill, 0%));
-}
-.range::-moz-range-track {
-  height: 6px; border-radius: 999px; background: var(--line-2);
-}
-.range::-moz-range-progress {
-  height: 6px; border-radius: 999px; background: var(--tone, var(--brand));
-}
-.range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 22px; height: 22px;
-  margin-top: -8px;
-  border-radius: 50%;
-  background: var(--card);
-  border: 2px solid var(--tone, var(--brand));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .16);
   cursor: pointer;
 }
-.range::-moz-range-thumb {
-  width: 20px; height: 20px;
+.range::-webkit-slider-runnable-track {
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: linear-gradient(to right, var(--tone, var(--brand)) var(--fill, 0%), var(--card-3) var(--fill, 0%));
+}
+.range::-moz-range-track { height: 7px; border-radius: var(--r-pill); background: var(--card-3); }
+.range::-moz-range-progress { height: 7px; border-radius: var(--r-pill); background: var(--tone, var(--brand)); }
+.range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px; height: 24px;
+  margin-top: -8.5px;
   border-radius: 50%;
   background: var(--card);
-  border: 2px solid var(--tone, var(--brand));
-  box-shadow: 0 2px 8px rgba(0, 0, 0, .16);
+  border: 2.5px solid var(--tone, var(--brand));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
+  transition: transform .14s var(--ease);
+}
+.range:active::-webkit-slider-thumb { transform: scale(1.12); }
+.range::-moz-range-thumb {
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--card);
+  border: 2.5px solid var(--tone, var(--brand));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .18);
 }
 
+/* 进度条 */
 .track {
-  height: 6px;
-  border-radius: 999px;
-  background: var(--line-2);
+  height: 7px;
+  border-radius: var(--r-pill);
+  background: var(--card-3);
   overflow: hidden;
   margin-top: 8px;
 }
 .track > i {
   display: block;
   height: 100%;
-  border-radius: 999px;
-  background: var(--tone, var(--brand));
-  transition: width .3s cubic-bezier(.22, .61, .36, 1);
+  border-radius: var(--r-pill);
+  background: linear-gradient(90deg,
+    color-mix(in srgb, var(--tone, var(--brand)) 78%, #fff),
+    var(--tone, var(--brand)));
+  transition: width .42s var(--ease-out);
 }
-.track.thin { height: 4px; }
-.track.tall { height: 8px; }
+.track.thin { height: 5px; }
 
-/* --------------------------------- 选项芯片 ------------------------------ */
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
+/* ------------------------------ 芯片 ------------------------------ */
+.chips { display: flex; flex-wrap: wrap; gap: 7px; }
 .chip {
-  padding: 8px 12px;
-  border-radius: 11px;
+  padding: 7px 12px;
+  border-radius: 10px;
   border: 1px solid var(--line);
   background: var(--card-2);
   font-size: 12.5px;
   font-weight: 650;
   color: var(--ink-2);
-  transition: all .16s;
   white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+  transition: all .16s var(--ease);
 }
-.chip:active { transform: scale(.97); }
+.chip small { display: block; font-size: 10px; font-weight: 500; color: var(--muted); margin-top: 1px; }
+.chip:active { transform: scale(.96); }
 .chip[aria-pressed="true"] {
-  border-color: color-mix(in srgb, var(--brand) 55%, var(--line));
-  background: color-mix(in srgb, var(--brand) 11%, var(--card));
+  border-color: color-mix(in srgb, var(--brand) 52%, var(--line));
+  background: color-mix(in srgb, var(--brand) 10%, var(--card));
   color: var(--brand-ink);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 10%, transparent);
 }
-.chip small { display: block; font-size: 10.5px; font-weight: 500; color: var(--muted); }
 
-/* --------------------------------- 徽标 --------------------------------- */
+/* ------------------------------ 徽标 ------------------------------ */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
+  border-radius: var(--r-pill);
+  font-size: 10.5px;
   font-weight: 700;
-  letter-spacing: .2px;
+  letter-spacing: .1px;
   border: 1px solid transparent;
   white-space: nowrap;
   flex: none;
 }
-.badge.strong { color: var(--ok); background: color-mix(in srgb, var(--ok) 11%, transparent); border-color: color-mix(in srgb, var(--ok) 26%, transparent); }
-.badge.ok     { color: var(--brand); background: color-mix(in srgb, var(--brand) 10%, transparent); border-color: color-mix(in srgb, var(--brand) 24%, transparent); }
-.badge.weak   { color: var(--warn); background: color-mix(in srgb, var(--warn) 12%, transparent); border-color: color-mix(in srgb, var(--warn) 28%, transparent); }
-.badge.poor   { color: var(--bad); background: color-mix(in srgb, var(--bad) 11%, transparent); border-color: color-mix(in srgb, var(--bad) 26%, transparent); }
+.badge.strong { color: var(--ok); background: var(--ok-soft); border-color: color-mix(in srgb, var(--ok) 24%, transparent); }
+.badge.ok     { color: var(--brand); background: color-mix(in srgb, var(--brand) 10%, transparent); border-color: color-mix(in srgb, var(--brand) 22%, transparent); }
+.badge.weak   { color: var(--warn); background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 26%, transparent); }
+.badge.poor   { color: var(--bad); background: var(--bad-soft); border-color: color-mix(in srgb, var(--bad) 24%, transparent); }
 .badge.ghost  { color: var(--muted); background: var(--card-2); border-color: var(--line); }
 
-/* --------------------------------- 按钮 --------------------------------- */
+/* ------------------------------ 按钮 ------------------------------ */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
-  padding: 12px 16px;
-  border-radius: 13px;
-  font-size: 14px;
+  padding: 11px 16px;
+  border-radius: 12px;
+  font-size: 13.5px;
   font-weight: 700;
-  transition: transform .12s, box-shadow .18s, background .18s;
   border: 1px solid transparent;
+  transition: transform .12s var(--ease), box-shadow .2s var(--ease), background .2s var(--ease), border-color .2s var(--ease);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
 }
-.btn:active { transform: scale(.985); }
+.btn:active { transform: scale(.975); }
+.btn .ico { width: 17px; height: 17px; flex: none; }
 .btn-primary {
   background: linear-gradient(135deg, var(--brand), var(--brand-2));
   color: #fff;
-  box-shadow: 0 10px 22px -12px var(--brand);
+  box-shadow: 0 8px 20px -10px var(--brand), inset 0 1px 0 rgba(255, 255, 255, .22);
 }
+.btn-primary:hover { box-shadow: 0 10px 26px -10px var(--brand); }
 .btn-ghost {
-  background: var(--card-2);
+  background: var(--card);
   border-color: var(--line);
   color: var(--ink-2);
+  box-shadow: var(--sh-1);
 }
+.btn-ghost:hover { background: var(--card-2); border-color: color-mix(in srgb, var(--ink) 14%, var(--line)); }
 .btn-block { width: 100%; }
-.btn-row { display: flex; gap: 10px; }
+.btn-row { display: flex; gap: 9px; }
 .btn-row .btn { flex: 1; }
-.btn.sm { padding: 9px 12px; font-size: 12.5px; border-radius: 11px; }
+.btn.sm { padding: 7px 11px; font-size: 12px; border-radius: 10px; }
+.btn.sm .ico { width: 15px; height: 15px; }
+.btn.danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 26%, var(--line)); background: var(--bad-soft); }
 
-/* ------------------------------ 实时预览条 ------------------------------- */
+/* ------------------------------ 实时预览条（录入页） ------------------------------ */
 .preview {
   position: sticky;
-  bottom: calc(var(--nav-h) + 12px + env(safe-area-inset-bottom, 0px));
-  z-index: 20;
-  background: linear-gradient(150deg, color-mix(in srgb, var(--brand) 94%, #000), var(--brand-2));
+  bottom: calc(var(--nav-h) + 10px + env(safe-area-inset-bottom, 0px));
+  z-index: 30;
+  border-radius: var(--r-md);
+  padding: 13px 15px;
   color: #fff;
-  border-radius: var(--r-lg);
-  padding: 14px 16px;
-  box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255, 255, 255, .06) inset;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--brand) 92%, #000), var(--brand-2));
+  box-shadow: var(--sh-3), 0 0 0 1px rgba(255, 255, 255, .07) inset;
   overflow: hidden;
 }
 .preview::after {
   content: "";
   position: absolute;
-  inset: -60% -20% auto auto;
-  width: 240px; height: 240px;
-  background: radial-gradient(circle, rgba(255, 255, 255, .18), transparent 62%);
+  inset: -70% -10% auto auto;
+  width: 230px; height: 230px;
+  background: radial-gradient(circle, rgba(255, 255, 255, .2), transparent 62%);
   pointer-events: none;
 }
 .preview-top {
@@ -539,215 +670,323 @@ svg { display: block; }
   align-items: flex-end;
   justify-content: space-between;
   gap: 12px;
+  position: relative;
 }
-.pv-label { font-size: 11.5px; font-weight: 600; opacity: .82; letter-spacing: .6px; }
+.pv-label { font-size: 11px; font-weight: 600; opacity: .82; letter-spacing: .3px; }
 .pv-score {
   display: flex;
   align-items: baseline;
   gap: 4px;
+  line-height: 1.05;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
 }
-.pv-score b { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
-.pv-score span { font-size: 12.5px; opacity: .8; font-weight: 600; }
-.pv-right { text-align: right; }
+.pv-score b {
+  font-size: 32px;
+  font-weight: 820;
+  letter-spacing: -1.2px;
+  transition: transform .2s var(--ease-out);
+}
+.pv-score b.bump { animation: bump .32s var(--ease-out); }
+@keyframes bump {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.055); }
+  100% { transform: scale(1); }
+}
+.pv-score span { font-size: 12px; opacity: .78; font-weight: 650; }
+.pv-right { text-align: right; flex: none; }
 .pv-badge {
   display: inline-block;
-  padding: 4px 9px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .17);
-  font-size: 11.5px;
+  padding: 3px 9px;
+  border-radius: var(--r-pill);
+  background: rgba(255, 255, 255, .18);
+  font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
 }
 .pv-bars {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 7px;
-  margin-top: 11px;
+  gap: 8px;
+  margin-top: 10px;
+  position: relative;
 }
 .pv-bar { min-width: 0; }
 .pv-bar .lbl {
-  display: flex; justify-content: space-between; align-items: baseline;
-  font-size: 10.5px; font-weight: 600; opacity: .85; margin-bottom: 4px;
-  font-variant-numeric: tabular-nums;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: .88;
+  margin-bottom: 4px;
+  white-space: nowrap;
 }
-.pv-bar .lbl b { font-size: 11.5px; opacity: 1; }
-.pv-bar .t { height: 5px; border-radius: 999px; background: rgba(255, 255, 255, .22); overflow: hidden; }
-.pv-bar .t > i { display: block; height: 100%; border-radius: 999px; background: #fff; transition: width .3s; }
+.pv-bar .lbl b { font-size: 11px; font-weight: 750; }
+.pv-bar .t { height: 4px; border-radius: var(--r-pill); background: rgba(255, 255, 255, .22); overflow: hidden; }
+.pv-bar .t > i { display: block; height: 100%; border-radius: var(--r-pill); background: #fff; transition: width .4s var(--ease-out); }
 
-/* ------------------------------- 统计卡片 -------------------------------- */
+/* ------------------------------ 统计 ------------------------------ */
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 9px;
 }
 .stat {
-  padding: 13px 14px;
+  padding: 12px 13px;
   border-radius: var(--r);
   background: var(--card-2);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-2);
   min-width: 0;
+  transition: border-color .2s var(--ease), background .2s var(--ease);
 }
-.stat .k { font-size: 11.5px; color: var(--muted); font-weight: 600; white-space: nowrap; }
+.stat:hover { border-color: var(--line); background: var(--card); }
+.stat .k { font-size: 11px; color: var(--muted); font-weight: 600; white-space: nowrap; }
 .stat .v {
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 800;
-  letter-spacing: -.6px;
-  font-variant-numeric: tabular-nums;
+  letter-spacing: -.8px;
   margin-top: 2px;
-  line-height: 1.2;
+  line-height: 1.15;
 }
-.stat .v small { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
-.stat .d { font-size: 11.5px; font-weight: 650; margin-top: 2px; }
+.stat .v small { font-size: 11.5px; font-weight: 600; color: var(--muted); letter-spacing: 0; margin-left: 2px; }
+.stat .d { font-size: 11px; font-weight: 650; margin-top: 2px; }
 .up { color: var(--ok); }
 .down { color: var(--bad); }
 .flat { color: var(--muted); }
 
-/* --------------------------------- 图表 --------------------------------- */
+/* ------------------------------ 图表 ------------------------------ */
 .chart-wrap {
   position: relative;
   width: 100%;
   touch-action: pan-y;
   user-select: none;
 }
-.chart-wrap svg { width: 100%; height: auto; }
+.chart-wrap svg { width: 100%; height: auto; overflow: visible; }
 .chart-empty {
   display: grid;
   place-items: center;
-  height: 180px;
+  height: 170px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 12.5px;
   text-align: center;
-  padding: 0 20px;
+  padding: 0 18px;
 }
+
+/* 图表入场动画：只做透明度和位移，绝不改变几何尺寸
+   （之前用 scaleY 会让柱子在动画中途视觉上被压扁） */
+.c-line { animation: drawIn .95s var(--ease-out) both; }
+@keyframes drawIn { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+
+.c-dot { animation: dotIn .42s var(--ease-out) both; }
+@keyframes dotIn { from { opacity: 0; } to { opacity: 1; } }
+
+.c-bar { animation: barIn .46s var(--ease-out) both; }
+@keyframes barIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.c-seg { animation: segIn .6s var(--ease-out) both; }
+@keyframes segIn { from { opacity: 0; } to { opacity: 1; } }
+
+.c-gauge { animation: gaugeIn .8s var(--ease-out) both; }
+@keyframes gaugeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* resize 重绘时关闭入场动画，避免闪烁 */
+.no-anim .c-line,
+.no-anim .c-dot,
+.no-anim .c-bar,
+.no-anim .c-seg,
+.no-anim .c-gauge { animation: none !important; }
+
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  margin-top: 10px;
-  font-size: 11.5px;
+  gap: 6px 14px;
+  margin-top: 9px;
+  font-size: 11px;
   color: var(--muted);
   font-weight: 600;
 }
 .legend .lg { display: inline-flex; align-items: center; gap: 5px; }
-.legend .lg i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
-.legend button { display: inline-flex; align-items: center; gap: 5px; opacity: 1; }
-.legend button[aria-pressed="false"] { opacity: .38; }
+.legend .lg i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.legend button {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 7px 3px 5px;
+  border-radius: var(--r-pill);
+  transition: opacity .18s var(--ease), background .18s var(--ease);
+}
+.legend button:hover { background: var(--card-3); }
+.legend button[aria-pressed="false"] { opacity: .35; }
+.legend button i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+
 .chart-tip {
   position: absolute;
-  z-index: 5;
+  z-index: 8;
   pointer-events: none;
-  transform: translate(-50%, -112%);
-  background: color-mix(in srgb, var(--ink) 92%, transparent);
+  transform: translate(-50%, -114%);
+  background: color-mix(in srgb, var(--ink) 94%, transparent);
   color: #fff;
-  padding: 7px 10px;
-  border-radius: 10px;
+  padding: 6px 10px;
+  border-radius: 9px;
   font-size: 11.5px;
   line-height: 1.5;
   white-space: nowrap;
-  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, .5);
+  box-shadow: var(--sh-3);
   opacity: 0;
-  transition: opacity .12s;
+  transition: opacity .13s var(--ease), transform .13s var(--ease);
 }
-.chart-tip.show { opacity: 1; }
-.chart-tip b { font-size: 13px; }
-.chart-tip .muted { opacity: .72; }
+.chart-tip.show { opacity: 1; transform: translate(-50%, -118%); }
+.chart-tip b { font-size: 12.5px; }
 
-/* --------------------------------- 记录列表 ------------------------------ */
+/* ------------------------------ 记录列表 ------------------------------ */
 .rec {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 12px 14px;
+  padding: 11px 14px;
   border-top: 1px solid var(--line-2);
+  transition: background .18s var(--ease);
 }
 .rec:first-child { border-top: 0; }
+.rec:hover { background: var(--card-2); }
 .rec-dot {
-  width: 4px; height: 34px; border-radius: 999px; flex: none;
-  background: linear-gradient(to bottom, var(--brand), var(--brand-2));
+  width: 3px;
+  align-self: stretch;
+  min-height: 30px;
+  border-radius: var(--r-pill);
+  flex: none;
 }
 .rec-main { flex: 1; min-width: 0; }
 .rec-title {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 13.5px; font-weight: 700; font-variant-numeric: tabular-nums;
-}
-.rec-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; font-variant-numeric: tabular-nums; }
-.rec-del {
-  width: 34px; height: 34px; flex: none;
-  border-radius: 10px;
-  display: grid; place-items: center;
-  color: var(--muted);
-  border: 1px solid var(--line);
-  background: var(--card-2);
-}
-.rec-del:active { color: var(--bad); }
-
-/* --------------------------------- 分析 --------------------------------- */
-.hero {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 750;
+  letter-spacing: -.2px;
 }
-.ring { position: relative; width: 104px; height: 104px; flex: none; }
+.rec-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 1px;
+  line-height: 1.45;
+}
+.rec-del {
+  width: 32px; height: 32px; flex: none;
+  border-radius: 9px;
+  display: grid; place-items: center;
+  color: var(--muted-2);
+  border: 1px solid transparent;
+  transition: all .16s var(--ease);
+}
+.rec-del:hover {
+  color: var(--bad);
+  background: var(--bad-soft);
+  border-color: color-mix(in srgb, var(--bad) 20%, transparent);
+}
+.rec-del:active { transform: scale(.92); }
+.rec-del .ico { width: 16px; height: 16px; }
+
+/* ------------------------------ 分析 ------------------------------ */
+.hero { display: flex; align-items: center; gap: 15px; }
+.ring { position: relative; width: 100px; height: 100px; flex: none; }
 .ring svg { width: 100%; height: 100%; }
 .ring .ring-txt {
   position: absolute; inset: 0;
   display: grid; place-items: center;
   text-align: center;
-  font-variant-numeric: tabular-nums;
 }
-.ring .ring-txt b { font-size: 27px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
-.ring .ring-txt span { font-size: 10.5px; color: var(--muted); font-weight: 600; }
+.ring .ring-txt b {
+  font-size: 26px;
+  font-weight: 820;
+  letter-spacing: -1.2px;
+  line-height: 1;
+  display: block;
+}
+.ring .ring-txt span { font-size: 10px; color: var(--muted); font-weight: 650; display: block; margin-top: 1px; }
 .hero-main { min-width: 0; flex: 1; }
-.hero-title { font-size: 17px; font-weight: 750; letter-spacing: -.2px; }
-.hero-desc { font-size: 12.5px; color: var(--muted); margin-top: 3px; }
-
-.diag {
-  display: grid;
-  gap: 8px;
+.hero-title {
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -.3px;
+  line-height: 1.35;
 }
+.hero-desc { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.55; }
+
+/* 诊断条目 */
+.diag { display: grid; gap: 7px; }
 .diag-item {
   display: flex;
-  gap: 9px;
+  gap: 10px;
   align-items: flex-start;
-  padding: 10px 12px;
-  border-radius: var(--r-sm);
+  padding: 11px 12px;
+  border-radius: var(--r);
   background: var(--card-2);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-2);
   font-size: 12.5px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--ink-2);
+  transition: border-color .18s var(--ease), background .18s var(--ease);
 }
-.diag-item .di { font-size: 15px; line-height: 1.2; flex: none; }
-.diag-item b { color: var(--ink); }
+.diag-item:hover { background: var(--card); border-color: var(--line); }
+.diag-item .di {
+  font-size: 13px;
+  line-height: 1.5;
+  flex: none;
+  width: 20px; height: 20px;
+  display: grid; place-items: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--brand) 12%, transparent);
+  color: var(--brand);
+}
+.diag-item b { color: var(--ink); font-weight: 700; }
+.diag-item.bad .di { background: var(--bad-soft); color: var(--bad); }
+.diag-item.warn .di { background: var(--warn-soft); color: var(--warn); }
+.diag-item.good .di { background: var(--ok-soft); color: var(--ok); }
 
-.plan-list { display: grid; gap: 9px; }
+/* 提分路径 */
+.plan-list { display: grid; gap: 8px; }
 .plan-item {
   display: flex;
   align-items: center;
   gap: 11px;
-  padding: 11px 12px;
-  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  border-radius: var(--r);
   background: var(--card-2);
-  border: 1px solid var(--line);
+  border: 1px solid var(--line-2);
+  transition: border-color .18s var(--ease), background .18s var(--ease), transform .18s var(--ease);
 }
+.plan-item:hover { background: var(--card); border-color: var(--line); }
 .plan-n {
-  width: 24px; height: 24px; border-radius: 8px; flex: none;
+  width: 23px; height: 23px;
+  border-radius: 8px;
+  flex: none;
   display: grid; place-items: center;
   background: color-mix(in srgb, var(--brand) 12%, transparent);
   color: var(--brand-ink);
-  font-size: 12px; font-weight: 800;
-  font-variant-numeric: tabular-nums;
+  font-size: 11.5px;
+  font-weight: 800;
 }
 .plan-main { flex: 1; min-width: 0; }
-.plan-title { font-size: 13px; font-weight: 650; }
-.plan-sub { font-size: 11.5px; color: var(--muted); margin-top: 1px; }
-.plan-gain { font-size: 13px; font-weight: 800; color: var(--ok); font-variant-numeric: tabular-nums; flex: none; }
+.plan-title { font-size: 12.5px; font-weight: 680; line-height: 1.4; }
+.plan-sub { font-size: 11px; color: var(--muted); margin-top: 1px; line-height: 1.45; }
+.plan-gain {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--ok);
+  flex: none;
+  letter-spacing: -.3px;
+}
 
-.advice { display: grid; gap: 6px; margin-top: 10px; }
+/* 建议列表 */
+.advice { display: grid; gap: 6px; }
 .advice li {
   position: relative;
-  padding-left: 16px;
+  padding-left: 15px;
   font-size: 12.5px;
   line-height: 1.62;
   color: var(--ink-2);
@@ -755,216 +994,351 @@ svg { display: block; }
 .advice li::before {
   content: "";
   position: absolute;
-  left: 3px; top: .58em;
+  left: 3px; top: .62em;
   width: 5px; height: 5px;
   border-radius: 50%;
   background: var(--tone, var(--brand));
-  opacity: .75;
+  opacity: .7;
 }
 
+/* 折叠 */
 details.acc {
   border-top: 1px solid var(--line-2);
-  padding: 10px 0 0;
+  padding-top: 9px;
+  margin-top: 9px;
 }
 details.acc > summary {
   list-style: none;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 8px;
   padding: 2px 0;
-  font-size: 13px;
-  font-weight: 650;
+  font-size: 12.5px;
+  font-weight: 680;
+  color: var(--ink-2);
+  border-radius: 8px;
+  transition: color .16s var(--ease);
 }
+details.acc > summary:hover { color: var(--brand); }
 details.acc > summary::-webkit-details-marker { display: none; }
 details.acc > summary .caret {
   margin-left: auto;
-  width: 18px; height: 18px;
+  width: 16px; height: 16px;
   flex: none;
   color: var(--muted);
-  transition: transform .2s;
+  transition: transform .22s var(--ease);
 }
 details.acc[open] > summary .caret { transform: rotate(180deg); }
-details.acc .acc-body { padding-top: 8px; }
+details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) both; }
+@keyframes accIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
 
-/* --------------------------------- 表格 --------------------------------- */
-.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+/* ------------------------------ 表格 ------------------------------ */
+.tbl { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .tbl th, .tbl td { padding: 8px 5px; text-align: right; border-bottom: 1px solid var(--line-2); }
 .tbl th:first-child, .tbl td:first-child { text-align: left; }
-.tbl thead th { font-size: 11.5px; color: var(--muted); font-weight: 600; }
-.tbl tbody tr:last-child td { border-bottom: 0; }
-.tbl td.acc { font-weight: 700; }
-
-@media (max-width: 359px) {
-  .tbl { font-size: 11.5px; }
-  .tbl th, .tbl td { padding: 7px 3px; }
+.tbl thead th {
+  font-size: 10.5px;
+  color: var(--muted);
+  font-weight: 650;
+  letter-spacing: .2px;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 7px;
 }
+.tbl tbody tr:last-child td { border-bottom: 0; }
+.tbl tbody tr { transition: background .16s var(--ease); }
+.tbl tbody tr:hover { background: var(--card-2); }
+.tbl td.acc { font-weight: 750; }
+.tbl .muted { color: var(--muted); font-weight: 500; }
+.tbl-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-/* --------------------------------- 表单 --------------------------------- */
-.field { display: grid; gap: 6px; }
-.field > label { font-size: 12.5px; font-weight: 650; color: var(--ink-2); }
-.field .hint { font-size: 11.5px; color: var(--muted); }
+/* ------------------------------ 表单 ------------------------------ */
+.field { display: grid; gap: 6px; min-width: 0; }
+.field > label { font-size: 12px; font-weight: 650; color: var(--ink-2); }
 .input {
   width: 100%;
-  padding: 11px 13px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
+  padding: 10px 12px;
+  border-radius: 11px;
+  border: 1.5px solid var(--line);
   background: var(--card-2);
   color: var(--ink);
-  font: 500 15px/1.4 var(--font);
+  font: 500 14.5px/1.4 var(--font);
   outline: none;
   -webkit-appearance: none;
   appearance: none;
-  transition: border-color .16s, box-shadow .16s;
+  transition: border-color .16s var(--ease), box-shadow .16s var(--ease), background .16s var(--ease);
 }
-.input:focus { border-color: var(--brand); box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 15%, transparent); }
-.input::placeholder { color: var(--muted); opacity: .75; }
-textarea.input { resize: vertical; min-height: 62px; font-size: 14px; }
-select.input { padding-right: 34px; }
+.input:focus {
+  border-color: var(--brand);
+  background: var(--card);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 14%, transparent);
+}
+.input::placeholder { color: var(--muted-2); }
+.form-grid { display: grid; gap: 11px; }
 
-.form-grid { display: grid; gap: 12px; }
-@media (min-width: 760px) { .form-grid.two { grid-template-columns: 1fr 1fr; } }
-
-/* --------------------------------- 空状态 -------------------------------- */
+/* ------------------------------ 空状态 ------------------------------ */
 .empty {
   text-align: center;
-  padding: 26px 18px;
+  padding: 30px 20px;
   color: var(--muted);
 }
 .empty .em-ico {
   width: 56px; height: 56px;
-  margin: 0 auto 10px;
+  margin: 0 auto 12px;
   border-radius: 18px;
   display: grid; place-items: center;
-  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  background: linear-gradient(150deg, color-mix(in srgb, var(--brand) 14%, transparent), color-mix(in srgb, var(--brand-2) 10%, transparent));
   color: var(--brand);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .4);
 }
-.empty h3 { font-size: 14.5px; color: var(--ink); margin-bottom: 4px; }
-.empty p { font-size: 12.5px; line-height: 1.6; }
-.empty .btn { margin-top: 14px; }
+.empty .em-ico .ico { width: 26px; height: 26px; }
+.empty h3 { font-size: 14.5px; font-weight: 750; color: var(--ink); margin-bottom: 5px; }
+.empty p { font-size: 12.5px; line-height: 1.65; max-width: 320px; margin: 0 auto; }
+.empty .btn-row { margin-top: 16px; max-width: 340px; margin-left: auto; margin-right: auto; }
 
-/* --------------------------------- 底部导航 ------------------------------ */
+/* ------------------------------ 底部导航 ------------------------------ */
 .tabbar {
   position: fixed;
   left: 50%;
-  bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(9px + env(safe-area-inset-bottom, 0px));
   transform: translateX(-50%);
-  z-index: 40;
-  width: min(calc(100% - 20px), 460px);
+  z-index: 50;
+  width: min(calc(100% - 20px), 430px);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 2px;
-  padding: 6px;
-  border-radius: 20px;
-  background: color-mix(in srgb, var(--card) 88%, transparent);
-  -webkit-backdrop-filter: saturate(180%) blur(18px);
-  backdrop-filter: saturate(180%) blur(18px);
+  padding: 5px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--card) 86%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--sh-pop);
 }
 .tab {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 3px;
   padding: 7px 4px 6px;
-  border-radius: 14px;
+  border-radius: 13px;
   color: var(--muted);
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 650;
-  transition: color .18s, background .18s;
+  transition: color .22s var(--ease), background .22s var(--ease), transform .16s var(--ease);
 }
-.tab .ico { width: 21px; height: 21px; }
+.tab .ico { width: 20px; height: 20px; transition: transform .22s var(--ease-out); }
+.tab:active { transform: scale(.95); }
 .tab[aria-selected="true"] {
   color: #fff;
   background: linear-gradient(140deg, var(--brand), var(--brand-2));
-  box-shadow: 0 8px 18px -10px var(--brand);
+  box-shadow: 0 8px 18px -9px var(--brand);
 }
-.tab[aria-selected="true"] .ico { opacity: 1; }
+.tab[aria-selected="true"] .ico { transform: translateY(-1px) scale(1.04); }
 
-/* --------------------------------- Toast -------------------------------- */
+/* ------------------------------ Toast ------------------------------ */
 .toast {
   position: fixed;
   left: 50%;
-  bottom: calc(var(--nav-h) + 34px + env(safe-area-inset-bottom, 0px));
-  transform: translate(-50%, 10px);
-  z-index: 60;
-  max-width: min(90vw, 420px);
-  padding: 11px 16px;
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--ink) 94%, transparent);
+  bottom: calc(var(--nav-h) + 30px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 12px) scale(.96);
+  z-index: 70;
+  max-width: min(90vw, 400px);
+  padding: 10px 15px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--ink) 95%, transparent);
   color: #fff;
-  font-size: 13px;
-  font-weight: 600;
-  box-shadow: var(--shadow-lg);
+  font-size: 12.5px;
+  font-weight: 650;
+  box-shadow: var(--sh-pop);
   opacity: 0;
   pointer-events: none;
-  transition: opacity .2s, transform .2s;
+  transition: opacity .2s var(--ease), transform .22s var(--ease-out);
   text-align: center;
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
-.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.toast.show { opacity: 1; transform: translate(-50%, 0) scale(1); }
+.toast .ico { width: 16px; height: 16px; flex: none; }
 
-/* --------------------------------- 说明 --------------------------------- */
+/* ------------------------------ 说明文字 ------------------------------ */
 .note {
-  font-size: 12px;
-  line-height: 1.68;
+  font-size: 11.5px;
+  line-height: 1.7;
   color: var(--muted);
 }
-.note b { color: var(--ink-2); }
-.note + .note { margin-top: 8px; }
-.divider { height: 1px; background: var(--line); margin: 14px 0; }
+.note b { color: var(--ink-2); font-weight: 650; }
+.note + .note { margin-top: 7px; }
 
-.kbd {
-  font: 600 11.5px var(--mono);
-  padding: 1px 5px;
-  border-radius: 5px;
-  background: var(--line-2);
-  color: var(--ink-2);
-}
+/* ------------------------------ 网格布局 ------------------------------ */
+/* 平板及以上：双栏 */
+.grid-2 { display: grid; gap: var(--gap); }
+.grid-2 > .span-2 { grid-column: 1 / -1; }
 
-/* --------------------------------- 响应式 -------------------------------- */
 @media (min-width: 760px) {
-  body { font-size: 15.5px; }
-  .view { padding: 18px 20px calc(var(--nav-h) + 34px + env(safe-area-inset-bottom, 0px)); gap: 14px; }
-  .topbar { padding-left: 20px; padding-right: 20px; }
-  .brand-mark { width: 42px; height: 42px; font-size: 21px; }
-  .brand-text h1 { font-size: 19px; }
-  .brand-text p { font-size: 12.5px; }
-  .card { padding: 20px; border-radius: 24px; }
-  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
-  .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-  .preview { padding: 18px 20px; }
-  .pv-score b { font-size: 42px; }
-  .pv-bars { gap: 12px; }
-  .ring { width: 128px; height: 128px; }
-  .ring .ring-txt b { font-size: 32px; }
-  .hero-title { font-size: 19px; }
-  .tabbar { width: 520px; }
+  :root { --gap: 14px; --pad: 20px; }
+  body { font-size: 15px; }
+  .view { padding-bottom: calc(var(--nav-h) + 40px + env(safe-area-inset-bottom, 0px)); }
+  .card { padding: 18px; border-radius: var(--r-lg); }
+  .card.pad-sm { padding: 15px; }
+  .brand-mark { width: 40px; height: 40px; font-size: 20px; border-radius: 12px; }
+  .brand-text h1 { font-size: 18.5px; }
+  .brand-text p { font-size: 11.5px; }
+  .card-title { font-size: 14.5px; }
+  .stat-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .stat .v { font-size: 23px; }
+  .hero-title { font-size: 18px; }
+  .ring { width: 118px; height: 118px; }
+  .ring .ring-txt b { font-size: 30px; }
+  .preview { padding: 15px 18px; }
+  .pv-score b { font-size: 38px; }
+  .tabbar { width: 500px; }
+
+  .grid-2 { grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); align-items: start; }
+  .grid-2.even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .grid-2 > .col { display: flex; flex-direction: column; gap: var(--gap); min-width: 0; }
+
+  /* 录入页：左录入 / 右预览（宽屏时预览变侧栏） */
+  .entry-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: var(--gap); align-items: start; }
+  .entry-side { position: sticky; top: calc(var(--topbar-h, 58px) + 12px); display: flex; flex-direction: column; gap: var(--gap); }
 }
 
 @media (min-width: 1080px) {
-  :root { --maxw: 920px; }
-  .brand-text h1 { font-size: 20px; }
+  :root { --gap: 16px; --pad: 24px; }
+  .entry-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
 }
 
-@media (max-width: 359px) {
-  .view { padding-left: 10px; padding-right: 10px; }
-  .card { padding: 13px; }
+/* ------------------------------ 仪表盘 / 环形 / 侧栏 ------------------------------ */
+.hero-card { padding-top: 15px; }
+
+.gauge-slot {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 132px;
+}
+.gauge-slot svg { width: 100%; height: auto; }
+
+.gauge-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 5px;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.donut-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.donut-wrap {
+  flex: none;
+  width: 46%;
+  max-width: 150px;
+}
+.donut-legend {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.dl-row {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 7px;
+  font-size: 11.5px;
+}
+.dl-row i { width: 9px; height: 9px; border-radius: 3px; }
+.dl-name { color: var(--ink-2); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-val { font-weight: 750; font-size: 12px; }
+.dl-pct { color: var(--muted); font-weight: 600; font-size: 11px; min-width: 30px; text-align: right; }
+
+.side-tip { display: none; }
+
+.sec-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin: -6px 0 8px;
+  font-weight: 550;
+}
+
+.t-ico {
+  width: 17px; height: 17px;
+  flex: none;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 10px;
+  font-weight: 800;
+}
+.t-ico.ok { background: var(--ok); color: #fff; }
+.t-ico.warn { background: var(--warn); color: #1a1400; }
+.t-ico.bad { background: var(--bad); color: #fff; }
+
+/* 表单双列（宽屏） */
+@media (min-width: 560px) {
+  .form-grid.two { grid-template-columns: 1fr 1fr; }
+}
+
+/* 宽屏：侧栏提示可见 */
+@media (min-width: 760px) {
+  .gauge-slot { width: 150px; }
+  .side-tip { display: block; }
+  .donut-row { gap: 18px; }
+  .donut-wrap { width: auto; max-width: 160px; }
+}
+
+/* 手机端录入页：预览浮动在内容之上 */
+.view-entry.has-preview { padding-bottom: calc(var(--nav-h) + 96px + env(safe-area-inset-bottom, 0px)); }
+.entry-side { display: contents; }
+@media (min-width: 760px) {
+  .entry-side { display: flex; }
+}
+
+@keyframes bump {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+/* ------------------------------ 小屏收敛 ------------------------------ */
+@media (max-width: 380px) {
+  :root { --pad: 11px; --gap: 10px; }
+  .card { padding: 13px; border-radius: var(--r); }
   .brand-text p { display: none; }
-  .pv-score b { font-size: 29px; }
+  .brand-mark { width: 32px; height: 32px; font-size: 16px; }
+  .brand-text h1 { font-size: 15px; }
   .stat .v { font-size: 19px; }
-  .step-btn { width: 34px; height: 34px; }
+  .pv-score b { font-size: 28px; }
+  .step-btn { width: 36px; height: 36px; }
+  .ring { width: 88px; height: 88px; }
+  .ring .ring-txt b { font-size: 22px; }
+  .hero { gap: 12px; }
+  .hero-title { font-size: 15px; }
+  .tbl { font-size: 11.5px; }
+  .tbl th, .tbl td { padding: 7px 3px; }
+  .diag-item, .plan-item { padding: 9px 10px; }
 }
 
+/* ------------------------------ 动效降级 / 打印 ------------------------------ */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  *, *::before, *::after {
+    animation-duration: .001ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: .001ms !important;
+  }
 }
 
-/* 打印 */
 @media print {
   .tabbar, .preview, .topbar-meta { display: none !important; }
   body { background: #fff; }
-  .card { box-shadow: none; border-color: #ddd; }
+  .card { box-shadow: none; border-color: #ddd; break-inside: avoid; }
 }
 
 </style>
@@ -1966,166 +2340,49 @@ window.CET4_CONTENT = {
 
 
 /*!
- * charts.js — 纯手写 SVG 图表（无第三方依赖）
- * lineChart / stackedBar / hbars / ring / tooltips
- * 所有函数返回 SVG 字符串；宽度由调用方按容器实测传入（1 用户单位 = 1 CSS px）。
+ * charts.js — 纯手写 SVG 图表库 v2（零依赖）
+ * ------------------------------------------------------------------
+ * 对外 API（同时保留 v1 别名，方便平滑替换）：
+ *   line(o)      折线图（支持显式整数刻度、平滑曲线、多参考线错位标签）
+ *   bar(o)       堆叠柱状图（顶段圆角、逐段提示）
+ *   hbars(o)     水平条形图（标签宽度自动测量，宽屏不再稀疏）
+ *   donut(o)     环形占比图
+ *   gauge(o)     270° 仪表盘（分段着色 + 425 参考）
+ *   sparkline(o) 迷你趋势线
+ *   bindTooltips(rootEl)  事件委托式数据浮层
+ *   esc / n / niceStep
+ *
+ * 所有函数返回 SVG 字符串；宽度按容器实测传入（1 用户单位 = 1 CSS px）。
  */
 (function (root) {
   'use strict';
 
-  var ICON_FONT = 'font-family="inherit"';
+  /* ============================== 工具 ============================== */
 
   function n(v, d) {
     var p = Math.pow(10, d == null ? 1 : d);
-    return Math.round((Number(v) || 0) * p) / p;
+    var r = Math.round((Number(v) || 0) * p) / p;
+    return isFinite(r) ? r : 0;
   }
+
   function esc(s) {
     return String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-  }
-  function clamp(v, lo, hi) { return Math.min(hi, Math.max(lo, v)); }
-
-  /** 平滑曲线（Catmull-Rom → 三次贝塞尔），并限制在绘图区内 */
-  function smoothPath(pts, lo, hi) {
-    if (pts.length < 2) return '';
-    if (pts.length === 2) return 'M' + n(pts[0].x) + ',' + n(pts[0].y) + ' L' + n(pts[1].x) + ',' + n(pts[1].y);
-    var d = 'M' + n(pts[0].x) + ',' + n(pts[0].y);
-    for (var i = 0; i < pts.length - 1; i++) {
-      var p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
-      var t = 0.2;
-      var c1x = p1.x + (p2.x - p0.x) * t;
-      var c1y = clamp(p1.y + (p2.y - p0.y) * t, lo, hi);
-      var c2x = p2.x - (p3.x - p1.x) * t;
-      var c2y = clamp(p2.y - (p3.y - p1.y) * t, lo, hi);
-      d += ' C' + n(c1x) + ',' + n(c1y) + ' ' + n(c2x) + ',' + n(c2y) + ' ' + n(p2.x) + ',' + n(p2.y);
-    }
-    return d;
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
-  /**
-   * 折线图
-   * @param {Object} o
-   *  width, height, labels[], series[{key,name,color,values[],visible}],
-   *  yMin, yMax, unit, marks[{value,label,color}], showLast, area
-   */
-  function lineChart(o) {
-    var W = Math.max(240, o.width || 340);
-    var H = o.height || 200;
-    var unit = o.unit || '分';
-    var labels = o.labels || [];
-    var series = (o.series || []).filter(function (s) { return s.visible !== false; });
-    var nPts = labels.length;
-    var pad = { l: 38, r: 16, t: 18, b: 30 };
-    var iw = W - pad.l - pad.r;
-    var ih = H - pad.t - pad.b;
-
-    if (!nPts || !series.length) {
-      return '<div class="chart-empty">暂无数据，录入成绩后自动生成</div>';
-    }
-
-    var allVals = [];
-    series.forEach(function (s) {
-      (s.values || []).forEach(function (v) { if (isFinite(v)) allVals.push(v); });
-    });
-    (o.marks || []).forEach(function (m) { if (isFinite(m.value)) allVals.push(m.value); });
-
-    var lo = o.yMin, hi = o.yMax;
-    if (lo == null || hi == null) {
-      var mn = Math.min.apply(null, allVals);
-      var mx = Math.max.apply(null, allVals);
-      var span = Math.max(40, mx - mn);
-      var step = niceStep(span / 3);
-      lo = Math.max(0, Math.floor((mn - span * 0.18) / step) * step);
-      hi = Math.min(o.floorMax == null ? 100 : o.floorMax, Math.ceil((mx + span * 0.22) / step) * step);
-      if (hi - lo < step * 2) hi = lo + step * 2;
-    }
-
-    var xAt = function (i) { return nPts === 1 ? n(pad.l + iw / 2) : n(pad.l + iw * i / (nPts - 1)); };
-    var yAt = function (v) { return n(pad.t + ih - (clamp(v, lo, hi) - lo) / (hi - lo) * ih); };
-
-    var ticks = 4;
-    var grid = '';
-    for (var g = 0; g <= ticks; g++) {
-      var vv = lo + (hi - lo) * g / ticks;
-      var yy = yAt(vv);
-      grid += '<line x1="' + pad.l + '" y1="' + n(yy) + '" x2="' + n(W - pad.r) + '" y2="' + n(yy) +
-        '" stroke="currentColor" stroke-opacity="' + (g === 0 ? '.22' : '.09') + '" stroke-width="1"/>';
-      grid += '<text x="' + (pad.l - 7) + '" y="' + n(yy + 3.4) + '" text-anchor="end" font-size="9.5" fill="currentColor" fill-opacity=".52">' +
-        n(vv, vv >= 100 ? 1 : 1) + '</text>';
-    }
-
-    // 参考线（425 基本目标等）：标签过近时上下错开，避免互相压字
-    var marks = '';
-    var drawn = [];
-    (o.marks || []).forEach(function (m) {
-      if (!isFinite(m.value) || m.value < lo || m.value > hi) return;
-      var my = yAt(m.value);
-      var dir = 1;
-      for (var k = 0; k < drawn.length; k++) {
-        if (Math.abs(drawn[k] - my) < 18) dir = drawn[k] > my ? -1 : 1;
-      }
-      var labelY = my + (dir > 0 ? -2 : 11);
-      var anchorX = pad.l + 4;
-      drawn.push(my);
-      marks += '<line x1="' + pad.l + '" y1="' + n(my) + '" x2="' + n(W - pad.r) + '" y2="' + n(my) +
-        '" stroke="' + (m.color || '#ef4444') + '" stroke-width="1.4" stroke-dasharray="5 4" stroke-opacity=".75"/>';
-      marks += '<rect x="' + anchorX + '" y="' + n(labelY - 7.5) + '" width="' + (m.label.length * 6.2 + 10) + '" height="14" rx="7" fill="' +
-        (m.color || '#ef4444') + '" fill-opacity=".14"/>';
-      marks += '<text x="' + (anchorX + 5) + '" y="' + n(labelY + 3.4) + '" font-size="9.5" font-weight="600" fill="' +
-        (m.color || '#ef4444') + '">' + esc(m.label) + '</text>';
-    });
-
-    // X 轴标签
-    var axis = '';
-    var every = Math.max(1, Math.ceil(nPts / Math.max(3, Math.floor(iw / 44))));
-    labels.forEach(function (lb, i) {
-      if (i % every !== 0 && i !== nPts - 1) return;
-      axis += '<text x="' + xAt(i) + '" y="' + (H - pad.b + 15) + '" text-anchor="middle" font-size="9.5" fill="currentColor" fill-opacity=".55">' +
-        esc(lb) + '</text>';
-    });
-
-    // 系列
-    var paths = '';
-    series.forEach(function (s, si) {
-      var vals = s.values || [];
-      var pts = [];
-      for (var i = 0; i < vals.length; i++) {
-        if (vals[i] == null || !isFinite(vals[i])) continue;
-        pts.push({ x: xAt(i), y: yAt(vals[i]), v: vals[i], i: i });
-      }
-      if (!pts.length) return;
-      var d = smoothPath(pts, pad.t, pad.t + ih);
-      if (o.area !== false && series.length === 1) {
-        var gid = 'lg' + si + '_' + Math.random().toString(36).slice(2, 7);
-        paths += '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
-          '<stop offset="0%" stop-color="' + s.color + '" stop-opacity=".22"/>' +
-          '<stop offset="100%" stop-color="' + s.color + '" stop-opacity="0"/></linearGradient></defs>' +
-          '<path d="' + d + ' L' + n(pts[pts.length - 1].x) + ',' + n(pad.t + ih) + ' L' + n(pts[0].x) + ',' + n(pad.t + ih) + ' Z" fill="url(#' + gid + ')"/>';
-      }
-      paths += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="' + (series.length > 1 ? 2 : 2.6) +
-        '" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="' + (s.faded ? '.45' : '.95') + '"/>';
-      pts.forEach(function (p, k) {
-        var last = k === pts.length - 1;
-        paths += '<circle cx="' + n(p.x) + '" cy="' + n(p.y) + '" r="' + (last && series.length === 1 ? 4.4 : 3.2) + '" fill="' +
-          (s.color) + '" stroke="var(--card)" stroke-width="1.6"/>';
-        if (last && series.length === 1 && o.showLast !== false) {
-          var txt = n(p.v, p.v >= 100 ? 1 : 1);
-          var tx = clamp(p.x, pad.l + 14, W - pad.r - 16);
-          paths += '<text x="' + n(tx) + '" y="' + n(p.y - 11) + '" text-anchor="middle" font-size="11" font-weight="700" fill="' + s.color + '">' + txt + '</text>';
-        }
-      });
-      pts.forEach(function (p) {
-        var tip = s.tipPrefix ? s.tipPrefix + ' ' : '';
-        paths += '<circle class="hit" cx="' + n(p.x) + '" cy="' + n(p.y) + '" r="13" fill="transparent" data-tip="' +
-          esc('<b>' + tip + n(p.v, 1) + unit + '</b><br>' + (labels[p.i] || '')) + '"/>';
-      });
-    });
-
-    return '<svg viewBox="0 0 ' + n(W) + ' ' + n(H) + '" width="100%" height="' + n(H) + '" role="img" aria-label="' + esc(o.aria || '趋势折线图') + '" style="color:var(--ink)">' +
-      grid + marks + axis + paths + '</svg>';
+  function clamp(v, lo, hi) {
+    v = Number(v);
+    if (!isFinite(v)) v = lo;
+    return Math.min(hi, Math.max(lo, v));
   }
 
+  function isNum(v) { return v !== null && v !== undefined && v !== '' && isFinite(Number(v)); }
+
+  /** 好看的刻度步长 */
   function niceStep(x) {
     if (!isFinite(x) || x <= 0) return 10;
     var exp = Math.floor(Math.log(x) / Math.LN10);
@@ -2134,135 +2391,577 @@ window.CET4_CONTENT = {
     return nf * Math.pow(10, exp);
   }
 
-  /**
-   * 堆叠柱状图（每次考试的分数构成）
-   * o: { width, height, items:[{label, total, parts:[{value,color,label}]}], series[], max }
-   */
-  function stackedBar(o) {
-    var W = Math.max(240, o.width || 340);
-    var H = o.height || 220;
-    var items = o.items || [];
-    var series = o.series || [];
-    var max = o.max || 710;
-    var pad = { l: 34, r: 12, t: 22, b: 30 };
-    var iw = W - pad.l - pad.r;
-    var ih = H - pad.t - pad.b;
-
-    if (!items.length) return '<div class="chart-empty">暂无数据，录入成绩后自动生成</div>';
-
-    var yAt = function (v) { return n(pad.t + ih - clamp(v, 0, max) / max * ih); };
-    var grid = '';
-    for (var g = 0; g <= 4; g++) {
-      var vv = max * g / 4;
-      var yy = yAt(vv);
-      grid += '<line x1="' + pad.l + '" y1="' + n(yy) + '" x2="' + n(W - pad.r) + '" y2="' + n(yy) +
-        '" stroke="currentColor" stroke-opacity="' + (g === 0 ? '.22' : '.08') + '" stroke-width="1"/>' +
-        '<text x="' + (pad.l - 6) + '" y="' + n(yy + 3.4) + '" text-anchor="end" font-size="9" fill="currentColor" fill-opacity=".5">' +
-        n(vv, 0) + '</text>';
-    }
-
-    var slot = iw / Math.max(items.length, 1);
-    var bw = clamp(slot * 0.52, 8, 52);
-    var bars = '';
-    items.forEach(function (it, i) {
-      var cx = n(pad.l + slot * i + slot / 2);
-      var x = cx - bw / 2;
-      var base = pad.t + ih;
-      var acc = 0;
-      (it.parts || []).forEach(function (p, si) {
-        if (!p.value) return;
-        var y0 = yAt(acc);
-        var y1 = yAt(acc + p.value);
-        var h = Math.max(0, y0 - y1);
-        acc += p.value;
-        var isTop = si === (it.parts.length - 1);
-        bars += '<rect x="' + n(x) + '" y="' + n(y1) + '" width="' + n(bw) + '" height="' + n(h) +
-          '" fill="' + p.color + '" rx="' + (isTop ? 3 : 0) + '" fill-opacity=".92" data-tip="' +
-          esc('<b>' + (p.label || '') + ' ' + n(p.value, 1) + ' 分</b><br>' + it.label) + '"/>';
-      });
-      // 顶部总分
-      if (items.length <= 9 || i % 2 === 0) {
-        bars += '<text x="' + cx + '" y="' + n(yAt(it.total) - 6) + '" text-anchor="middle" font-size="10" font-weight="700" fill="currentColor" fill-opacity=".82">' +
-          n(it.total, 0) + '</text>';
-      }
-      // 底部时间
-      if (items.length <= 8 || i % 2 === 0) {
-        bars += '<text x="' + cx + '" y="' + (H - pad.b + 15) + '" text-anchor="middle" font-size="9" fill="currentColor" fill-opacity=".55">' +
-          esc(it.label) + '</text>';
-      }
-      bars += '<rect x="' + n(cx - slot / 2 + 1) + '" y="' + pad.t + '" width="' + n(slot - 2) + '" height="' + ih +
-        '" fill="transparent" data-tip="' + esc('<b>' + n(it.total, 1) + ' 分</b><br>' + it.label + '<br>' +
-          (it.parts || []).map(function (p) { return p.label + ' ' + n(p.value, 1); }).join(' · ')) + '"/>';
-    });
-
-    return '<svg viewBox="0 0 ' + n(W) + ' ' + n(H) + '" width="100%" height="' + n(H) + '" role="img" aria-label="' +
-      esc(o.aria || '各次成绩柱状图') + '" style="color:var(--ink)">' + grid + bars + '</svg>';
+  /** 整数刻度的文字（710 而不是 710.0） */
+  function tickText(v) {
+    var r = Math.round(Number(v) || 0);
+    return String(r);
   }
 
+  /** 中文宽度估算：中文/全角按 11.5px，数字英文按 6.4px */
+  function textWidth(str, fontSize) {
+    var s = String(str == null ? '' : str);
+    var size = fontSize || 10.5;
+    var w = 0;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.charCodeAt(i);
+      w += c > 0x2e80 ? size * 1.02 : size * 0.56;
+    }
+    return w;
+  }
+
+  /** 折线平滑（Catmull-Rom → 三次贝塞尔），并把控制点钳制在绘图区内避免溢出
+   *  t 取 0.5 是 Catmull-Rom 的标准张力，曲线会精确穿过每个数据点 */
+  function smoothPath(pts, lo, hi) {
+    if (!pts.length) return '';
+    if (pts.length === 1) return 'M' + n(pts[0].x) + ',' + n(pts[0].y);
+    if (pts.length === 2) {
+      return 'M' + n(pts[0].x) + ',' + n(pts[0].y) + ' L' + n(pts[1].x) + ',' + n(pts[1].y);
+    }
+    var d = 'M' + n(pts[0].x) + ',' + n(pts[0].y);
+    var t = 0.5 / 3 * 2;  /* ≈0.333：既穿过数据点，又不会过度鼓包 */
+    for (var i = 0; i < pts.length - 1; i++) {
+      var p0 = pts[i - 1] || pts[i];
+      var p1 = pts[i];
+      var p2 = pts[i + 1];
+      var p3 = pts[i + 2] || p2;
+      var c1x = p1.x + (p2.x - p0.x) * t * 0.5;
+      var c1y = clamp(p1.y + (p2.y - p0.y) * t * 0.5, lo, hi);
+      var c2x = p2.x - (p3.x - p1.x) * t * 0.5;
+      var c2y = clamp(p2.y - (p3.y - p1.y) * t * 0.5, lo, hi);
+      d += ' C' + n(c1x) + ',' + n(c1y) + ' ' + n(c2x) + ',' + n(c2y) + ' ' + n(p2.x) + ',' + n(p2.y);
+    }
+    return d;
+  }
+
+  function openSvg(W, H, aria, extra) {
+    return '<svg viewBox="0 0 ' + n(W) + ' ' + n(H) + '" width="100%" height="' + n(H) + '" role="img" aria-label="' +
+      esc(aria || '图表') + '" style="color:var(--ink);overflow:visible"' + (extra || '') + '>';
+  }
+
+  function emptyBox(text) {
+    return '<div class="chart-empty">' + esc(text || '暂无数据') + '</div>';
+  }
+
+  function uid(prefix) {
+    return (prefix || 'c') + Math.random().toString(36).slice(2, 8);
+  }
+
+  /* ============================== 折线图 ============================== */
+
   /**
-   * 水平条形图
-   * o: { width, rows:[{label, value, max, color, suffix, sub}], rowH, labelW, unit }
+   * line(o)
+   * o = { width, height, labels[], series[{key,name,color,values[],visible}],
+   *       ticks[], yMin, yMax, marks[{value,label,color}], unit, area, showLast, aria }
+   */
+  function line(o) {
+    o = o || {};
+    var W = Math.max(220, Math.round(o.width || 340));
+    var H = o.height || 200;
+    var unit = o.unit || '';
+    var labels = o.labels || [];
+    var series = (o.series || []).filter(function (s) { return s && s.visible !== false; });
+    var nPts = labels.length;
+
+    if (!nPts || !series.length) return emptyBox('暂无数据，录入成绩后自动生成');
+
+    var pad = { l: 40, r: 14, t: 20, b: 26 };
+    var iw = Math.max(40, W - pad.l - pad.r);
+    var ih = Math.max(40, H - pad.t - pad.b);
+
+    /* 范围与刻度 */
+    var vals = [];
+    series.forEach(function (s) {
+      (s.values || []).forEach(function (v) { if (isNum(v)) vals.push(Number(v)); });
+    });
+    (o.marks || []).forEach(function (m) { if (isNum(m.value)) vals.push(Number(m.value)); });
+
+    var lo = isNum(o.yMin) ? Number(o.yMin) : 0;
+    var hi = isNum(o.yMax) ? Number(o.yMax) : 100;
+    var ticks = Array.isArray(o.ticks) && o.ticks.length ? o.ticks.slice() : (function () {
+      var mx = vals.length ? Math.max.apply(null, vals) : hi;
+      var step = niceStep(Math.max(10, (mx - lo) / 4));
+      var out = [];
+      for (var v = lo; v <= mx + 0.001; v += step) out.push(Math.round(v));
+      if (!out.length) out = [lo, hi];
+      return out;
+    })();
+    /* ticks 的最后一个值作为上界，保证曲线不出框 */
+    var top = Math.max(hi, ticks[ticks.length - 1]);
+
+    var xAt = function (i) { return nPts === 1 ? n(pad.l + iw / 2) : n(pad.l + iw * i / (nPts - 1)); };
+    var yAt = function (v) { return n(pad.t + ih - (clamp(Number(v) || 0, lo, top) - lo) / (top - lo) * ih); };
+
+    /* 网格 + Y 轴刻度 */
+    var grid = '';
+    ticks.forEach(function (tv, i) {
+      var y = yAt(tv);
+      grid += '<line x1="' + pad.l + '" y1="' + n(y) + '" x2="' + n(W - pad.r) + '" y2="' + n(y) +
+        '" stroke="currentColor" stroke-opacity="' + (i === 0 ? '.20' : '.075') + '" stroke-width="1"/>';
+      grid += '<text x="' + (pad.l - 7) + '" y="' + n(y + 3.2) + '" text-anchor="end" font-size="9.5" ' +
+        'fill="currentColor" fill-opacity=".5" style="font-variant-numeric:tabular-nums">' + tickText(tv) + '</text>';
+    });
+
+    /* 参考线：多标签垂直错位，避免互相压字 */
+    var marks = '';
+    var placed = [];
+    (o.marks || []).forEach(function (m) {
+      if (!isNum(m.value)) return;
+      var mv = Number(m.value);
+      if (mv < lo || mv > top) return;
+      var my = yAt(mv);
+      var dir = -1;
+      for (var k = 0; k < placed.length; k++) {
+        if (Math.abs(placed[k] - my) < 16) dir = placed[k] > my ? 1 : -1;
+      }
+      placed.push(my);
+      var color = m.color || '#ef4444';
+      var lw = textWidth(m.label || '', 9.5) + 12;
+      var ly = clamp(my + (dir < 0 ? -3 : 11), pad.t + 8, pad.t + ih - 2);
+      marks += '<line x1="' + pad.l + '" y1="' + n(my) + '" x2="' + n(W - pad.r) + '" y2="' + n(my) +
+        '" stroke="' + color + '" stroke-width="1.3" stroke-dasharray="5 4" stroke-opacity=".7"/>';
+      marks += '<rect x="' + (pad.l + 2) + '" y="' + n(ly - 8) + '" width="' + n(lw) + '" height="15" rx="7.5" ' +
+        'fill="' + color + '" fill-opacity=".16"/>';
+      marks += '<text x="' + (pad.l + 8) + '" y="' + n(ly + 2.6) + '" font-size="9.5" font-weight="650" fill="' +
+        color + '">' + esc(m.label || '') + '</text>';
+    });
+
+    /* X 轴标签：按可用宽度抽稀，避免重叠 */
+    var axis = '';
+    var perLabel = Math.max(34, textWidth(labels[0] || '00-00', 9.5) + 12);
+    var every = Math.max(1, Math.ceil(nPts * perLabel / iw));
+    labels.forEach(function (lb, i) {
+      if (i % every !== 0 && i !== nPts - 1) return;
+      axis += '<text x="' + xAt(i) + '" y="' + (H - pad.b + 14) + '" text-anchor="middle" font-size="9.5" ' +
+        'fill="currentColor" fill-opacity=".52">' + esc(lb) + '</text>';
+    });
+
+    /* 系列曲线 + 数据点 + 命中区 */
+    var body = '';
+    var single = series.length === 1;
+    series.forEach(function (s, si) {
+      var color = s.color || 'var(--brand)';
+      var sv = s.values || [];
+      var pts = [];
+      for (var i = 0; i < sv.length; i++) {
+        if (!isNum(sv[i])) continue;
+        pts.push({ x: xAt(i), y: yAt(sv[i]), v: Number(sv[i]), i: i });
+      }
+      if (!pts.length) return;
+
+      var d = smoothPath(pts, pad.t, pad.t + ih);
+      var len = n(Math.max(iw, ih) * 2.2, 0);
+
+      if (o.area !== false && single && pts.length > 1) {
+        var gid = uid('lg');
+        body += '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="0" y2="1">' +
+          '<stop offset="0%" stop-color="' + color + '" stop-opacity=".26"/>' +
+          '<stop offset="92%" stop-color="' + color + '" stop-opacity="0"/></linearGradient></defs>';
+        body += '<path d="' + d + ' L' + n(pts[pts.length - 1].x) + ',' + n(pad.t + ih) +
+          ' L' + n(pts[0].x) + ',' + n(pad.t + ih) + ' Z" fill="url(#' + gid + ')"/>';
+      }
+
+      body += '<path class="c-line" d="' + d + '" pathLength="1" fill="none" stroke="' + color +
+        '" stroke-width="' + (single ? 2.4 : 2) + '" stroke-linecap="round" stroke-linejoin="round" ' +
+        'stroke-dasharray="1" stroke-dashoffset="1" stroke-opacity="' + (s.faded ? '.42' : '.95') + '"/>';
+
+      pts.forEach(function (p, k) {
+        var isLast = k === pts.length - 1;
+        if (single || isLast) {
+          body += '<circle class="c-dot" cx="' + n(p.x) + '" cy="' + n(p.y) + '" r="' +
+            (isLast && single ? 4.2 : 3) + '" fill="' + color + '" stroke="var(--card)" stroke-width="1.6"/>';
+        }
+        body += '<circle class="hit" cx="' + n(p.x) + '" cy="' + n(p.y) + '" r="14" fill="transparent" data-tip="' +
+          esc('<b>' + (s.name ? s.name + ' ' : '') + n(p.v, 1) + unit + '</b><br>' + (labels[p.i] || '')) + '"/>';
+      });
+
+      if (single && o.showLast !== false && pts.length) {
+        var lastP = pts[pts.length - 1];
+        var label = n(lastP.v, 1) + unit;
+        var tx = clamp(lastP.x, pad.l + 16, W - pad.r - 16);
+        body += '<text x="' + n(tx) + '" y="' + n(clamp(lastP.y - 12, pad.t + 9, H - pad.b)) +
+          '" text-anchor="middle" font-size="10.5" font-weight="750" fill="' + color + '">' + esc(label) + '</text>';
+      }
+    });
+
+    return openSvg(W, H, o.aria) + grid + marks + axis + body + '</svg>';
+  }
+
+  /* ============================== 堆叠柱 ============================== */
+
+  /**
+   * bar(o)
+   * o = { width, height, items:[{label,total,parts:[{value,color,label}]}], max, ticks[], unit, aria }
+   */
+  function bar(o) {
+    o = o || {};
+    var W = Math.max(220, Math.round(o.width || 340));
+    var H = o.height || 210;
+    var unit = o.unit || '';
+    var items = o.items || [];
+    var max = isNum(o.max) ? Number(o.max) : 710;
+
+    if (!items.length) return emptyBox('暂无数据，录入成绩后自动生成');
+
+    var pad = { l: 36, r: 12, t: 24, b: 26 };
+    var iw = Math.max(40, W - pad.l - pad.r);
+    var ih = Math.max(40, H - pad.t - pad.b);
+
+    var ticks = Array.isArray(o.ticks) && o.ticks.length ? o.ticks.slice() : (function () {
+      var step = niceStep(max / 4);
+      var out = [];
+      for (var v = 0; v <= max + 0.001; v += step) out.push(Math.round(v));
+      if (!out.length) out = [0];
+      return out;
+    })();
+    /* 覆盖上界：末位不足则追加 max，不能直接改写末位（会破坏等距刻度） */
+    if (ticks[ticks.length - 1] < max) ticks.push(Math.round(max));
+    var top = Math.max(max, ticks[ticks.length - 1]);
+
+    var yAt = function (v) { return n(pad.t + ih - clamp(Number(v) || 0, 0, top) / top * ih); };
+
+    var grid = '';
+    ticks.forEach(function (tv, i) {
+      var y = yAt(tv);
+      grid += '<line x1="' + pad.l + '" y1="' + n(y) + '" x2="' + n(W - pad.r) + '" y2="' + n(y) +
+        '" stroke="currentColor" stroke-opacity="' + (i === 0 ? '.20' : '.075') + '" stroke-width="1"/>';
+      grid += '<text x="' + (pad.l - 6) + '" y="' + n(y + 3.2) + '" text-anchor="end" font-size="9" ' +
+        'fill="currentColor" fill-opacity=".48" style="font-variant-numeric:tabular-nums">' + tickText(tv) + '</text>';
+    });
+
+    var slot = iw / items.length;
+    var bw = clamp(slot * 0.56, 7, 64);
+    var body = '';
+
+    items.forEach(function (it, i) {
+      var cx = n(pad.l + slot * i + slot / 2);
+      var x = n(cx - bw / 2);
+      var acc = 0;
+      var parts = it.parts || [];
+      var base = n(pad.t + ih);
+
+      parts.forEach(function (p, si) {
+        var v = Number(p.value) || 0;
+        if (v <= 0) return;
+        var y1 = yAt(acc + v);
+        var y0 = yAt(acc);
+        var h = Math.max(0.8, y0 - y1);
+        acc += v;
+        var isTop = si === parts.length - 1 || acc >= (it.total || 0) - 0.01;
+        /* 只有顶段圆角：普通 rect 的 rx 会把四角都圆掉，导致上下出现缺口 */
+        var r = isTop ? Math.min(4, bw / 2) : 0;
+        if (r > 0) {
+          var bx = x, by = n(y1), bwid = n(bw), bh = n(h);
+          var dpath = 'M' + bx + ',' + n(by + bh) +
+            ' L' + bx + ',' + n(by + r) +
+            ' Q' + bx + ',' + by + ' ' + n(bx + r) + ',' + by +
+            ' L' + n(bx + bwid - r) + ',' + by +
+            ' Q' + n(bx + bwid) + ',' + by + ' ' + n(bx + bwid) + ',' + n(by + r) +
+            ' L' + n(bx + bwid) + ',' + n(by + bh) + ' Z';
+          body += '<path class="c-bar" d="' + dpath + '" fill="' + (p.color || 'var(--brand)') + '" ' +
+            'style="animation-delay:' + (i * 30) + 'ms" data-tip="' +
+            esc('<b>' + (p.label || '') + ' ' + n(v, 1) + unit + '</b><br>' + it.label) + '"/>';
+        } else {
+          body += '<rect class="c-bar" x="' + x + '" y="' + n(y1) + '" width="' + n(bw) + '" height="' + n(h) +
+            '" fill="' + (p.color || 'var(--brand)') + '" ' +
+            'style="animation-delay:' + (i * 30) + 'ms" data-tip="' +
+            esc('<b>' + (p.label || '') + ' ' + n(v, 1) + unit + '</b><br>' + it.label) + '"/>';
+        }
+      });
+
+      /* 柱顶总分 */
+      if (items.length <= 10) {
+        body += '<text x="' + cx + '" y="' + n(yAt(it.total) - 6) + '" text-anchor="middle" font-size="10" ' +
+          'font-weight="750" fill="currentColor" fill-opacity=".84">' + n(it.total, 0) + '</text>';
+      }
+      /* X 轴标签 */
+      var showLabel = items.length <= 7 || i % Math.ceil(items.length / 6) === 0 || i === items.length - 1;
+      if (showLabel) {
+        body += '<text x="' + cx + '" y="' + (H - pad.b + 14) + '" text-anchor="middle" font-size="9.5" ' +
+          'fill="currentColor" fill-opacity=".52">' + esc(it.label) + '</text>';
+      }
+      /* 整列命中区（显示总分与构成） */
+      body += '<rect x="' + n(cx - slot / 2 + 1) + '" y="' + pad.t + '" width="' + n(slot - 2) + '" height="' + ih +
+        '" fill="transparent" data-tip="' + esc('<b>' + n(it.total, 1) + unit + '</b><br>' + it.label +
+          (parts.length ? '<br>' + parts.map(function (p) { return (p.label || '') + ' ' + n(p.value, 1); }).join(' · ') : '')) + '"/>';
+    });
+
+    return openSvg(W, H, o.aria) + grid + body + '</svg>';
+  }
+
+  /* ============================== 水平条 ============================== */
+
+  /**
+   * hbars(o)
+   * o = { width, rows:[{label,value,max,color,sub}], rowH, labelW, rightW, unit, showPct, aria }
+   * labelW / rightW 传 0 或省略时自动按内容估算。
    */
   function hbars(o) {
-    var W = Math.max(240, o.width || 340);
+    o = o || {};
+    var W = Math.max(200, Math.round(o.width || 340));
     var rows = o.rows || [];
-    var rowH = o.rowH || 29;
-    var labelW = o.labelW || 0;
+    var rowH = o.rowH || 30;
     var unit = o.unit == null ? '分' : o.unit;
-    var padT = 4, padB = 4;
-    var H = padT + padB + rowH * rows.length;
-    if (!rows.length) return '<div class="chart-empty">暂无数据</div>';
+    var showPct = !!o.showPct;
 
-    var rightW = o.rightW || 44;
+    if (!rows.length) return emptyBox('暂无数据');
+
+    /* 自动测量标签与数值宽度 */
+    var labelW = Number(o.labelW) || 0;
+    if (!labelW) {
+      var lw = 0;
+      rows.forEach(function (r) { lw = Math.max(lw, textWidth(r.label || '', 10.5)); });
+      labelW = Math.min(Math.round(W * 0.34), Math.max(30, Math.ceil(lw) + 8));
+    }
+    var rightW = Number(o.rightW) || 0;
+    if (!rightW) {
+      var rw = 0;
+      rows.forEach(function (r) {
+        rw = Math.max(rw, textWidth(n(r.value, 1) + (unit || ''), 10.5));
+      });
+      rightW = Math.min(Math.round(W * 0.3), Math.max(28, Math.ceil(rw) + 8));
+    }
+
     var trackX = labelW;
-    var trackW = W - labelW - rightW - 6;
+    var trackW = Math.max(20, W - labelW - rightW - 4);
+    var H = rowH * rows.length + 6;
+    var barH = Math.min(12, Math.max(6, rowH - 14));
 
     var out = '';
     rows.forEach(function (r, i) {
-      var y = padT + i * rowH;
-      var cy = y + rowH / 2;
-      var pct = clamp((r.value || 0) / (r.max || 1), 0, 1);
-      var bh = Math.min(13, rowH - 12);
-      if (labelW) {
-        out += '<text x="0" y="' + n(cy + 3.4) + '" font-size="10.5" fill="currentColor" fill-opacity=".62">' + esc(r.label) + '</text>';
+      var cy = i * rowH + rowH / 2;
+      var v = Number(r.value) || 0;
+      var mx = Number(r.max) || 1;
+      var pct = clamp(v / mx, 0, 1);
+      var w = Math.max(pct * trackW, v > 0 ? barH : 0);
+
+      out += '<text x="0" y="' + n(cy + 3.4) + '" font-size="10.5" fill="currentColor" fill-opacity=".66">' +
+        esc(r.label || '') + '</text>';
+      out += '<rect x="' + trackX + '" y="' + n(cy - barH / 2) + '" width="' + n(trackW) + '" height="' + barH +
+        '" rx="' + n(barH / 2) + '" fill="currentColor" fill-opacity=".075"/>';
+      if (w > 0) {
+        out += '<rect class="c-bar" x="' + trackX + '" y="' + n(cy - barH / 2) + '" width="' + n(w) + '" height="' + barH +
+          '" rx="' + n(barH / 2) + '" fill="' + (r.color || 'var(--brand)') + '" style="animation-delay:' + (i * 50) + 'ms"/>';
       }
-      out += '<rect x="' + trackX + '" y="' + n(cy - bh / 2) + '" width="' + n(trackW) + '" height="' + n(bh) +
-        '" rx="' + n(bh / 2) + '" fill="currentColor" fill-opacity=".08"/>';
-      out += '<rect x="' + trackX + '" y="' + n(cy - bh / 2) + '" width="' + n(Math.max(pct * trackW, bh)) + '" height="' + n(bh) +
-        '" rx="' + n(bh / 2) + '" fill="' + (r.color || 'var(--brand)') + '"/>';
-      out += '<text x="' + n(W - 2) + '" y="' + n(cy + 3.4) + '" text-anchor="end" font-size="10.5" font-weight="650" fill="currentColor" fill-opacity=".8">' +
-        n(r.value, 1) + (unit || '') + '</text>';
-      out += '<rect x="0" y="' + y + '" width="' + n(W) + '" height="' + rowH + '" fill="transparent" data-tip="' +
-        esc('<b>' + r.label + '</b><br>' + n(r.value, 1) + unit + (r.max ? ' / ' + n(r.max, 1) + unit : '') +
-          (r.sub ? '<br>' + r.sub : '')) + '"/>';
+      var valTxt = n(v, 1) + (unit || '') + (showPct ? ' · ' + Math.round(pct * 100) + '%' : '');
+      out += '<text x="' + n(W - 1) + '" y="' + n(cy + 3.4) + '" text-anchor="end" font-size="10.5" font-weight="700" ' +
+        'fill="currentColor" fill-opacity=".82">' + esc(valTxt) + '</text>';
+      out += '<rect x="0" y="' + (i * rowH) + '" width="' + n(W) + '" height="' + rowH + '" fill="transparent" data-tip="' +
+        esc('<b>' + (r.label || '') + '</b><br>' + n(v, 1) + (unit || '') +
+          (r.max ? ' / ' + n(r.max, 1) + (unit || '') : '') + (r.sub ? '<br>' + r.sub : '')) + '"/>';
     });
 
-    return '<svg viewBox="0 0 ' + n(W) + ' ' + n(H) + '" width="100%" height="' + n(H) + '" role="img" aria-label="' +
-      esc(o.aria || '得分明细条形图') + '" style="color:var(--ink)">' + out + '</svg>';
+    return openSvg(W, H, o.aria) + out + '</svg>';
   }
 
-  /** 环形进度 */
+  /* ============================== 环形图 ============================== */
+
+  /**
+   * donut(o)
+   * o = { size, thickness, segments:[{value,color,label}], centerTitle, centerSub, gap, aria }
+   */
+  function donut(o) {
+    o = o || {};
+    var size = o.size || 150;
+    var th = o.thickness || 16;
+    var segs = (o.segments || []).filter(function (s) { return s && Number(s.value) > 0; });
+    var cx = size / 2;
+    var cy = size / 2;
+    var r = (size - th) / 2 - 1;
+    var circ = 2 * Math.PI * r;
+
+    var body = '<circle cx="' + n(cx) + '" cy="' + n(cy) + '" r="' + n(r) + '" fill="none" stroke="currentColor" ' +
+      'stroke-opacity=".09" stroke-width="' + th + '"/>';
+
+    var total = segs.reduce(function (s, x) { return s + Number(x.value); }, 0);
+    if (total > 0) {
+      var gapDeg = Math.max(0, Math.min(6, Number(o.gap) == null ? 2 : Number(o.gap)));
+      var acc = 0;
+      segs.forEach(function (seg) {
+        var frac = Number(seg.value) / total;
+        var len = Math.max(0, frac * circ - (gapDeg / 360) * circ);
+        var off = -acc * circ;
+        body += '<circle class="c-seg" cx="' + n(cx) + '" cy="' + n(cy) + '" r="' + n(r) + '" fill="none" stroke="' +
+          (seg.color || 'var(--brand)') + '" stroke-width="' + th + '" stroke-linecap="round" ' +
+          'stroke-dasharray="' + n(len) + ' ' + n(circ - len) + '" stroke-dashoffset="' + n(off) + '" ' +
+          'transform="rotate(-90 ' + n(cx) + ' ' + n(cy) + ')" data-tip="' +
+          esc('<b>' + (seg.label || '') + '</b><br>' + n(seg.value, 1) + ' 分 · ' + Math.round(frac * 100) + '%') + '"/>';
+        acc += frac;
+      });
+    }
+
+    var title = o.centerTitle != null ? String(o.centerTitle) : '';
+    if (title) {
+      body += '<text x="' + n(cx) + '" y="' + n(cy + (o.centerSub ? -1 : 6)) + '" text-anchor="middle" ' +
+        'font-size="' + n(Math.max(16, size * 0.2), 0) + '" font-weight="800" fill="currentColor" ' +
+        'style="font-variant-numeric:tabular-nums;letter-spacing:-.5px">' + esc(title) + '</text>';
+    }
+    if (o.centerSub) {
+      body += '<text x="' + n(cx) + '" y="' + n(cy + (title ? 15 : 5)) + '" text-anchor="middle" font-size="9.5" ' +
+        'fill="currentColor" fill-opacity=".55">' + esc(o.centerSub) + '</text>';
+    }
+
+    return '<svg viewBox="0 0 ' + n(size) + ' ' + n(size) + '" width="' + n(size) + '" height="' + n(size) +
+      '" role="img" aria-label="' + esc(o.aria || '占比环形图') + '" style="color:var(--ink)">' + body + '</svg>';
+  }
+
+  /* ============================== 仪表盘 ============================== */
+
+  /**
+   * gauge(o)
+   * o = { size, value, max, bands:[{from,to,color}], marks:[{value,label}], label, sub, aria }
+   * 270° 弧：从 135° 顺时针到 405°
+   */
+  function gauge(o) {
+    o = o || {};
+    var size = o.size || 160;
+    var cx = size / 2;
+    var cy = size / 2;
+    var th = Math.max(8, Math.round(size * 0.085));
+    var r = (size - th) / 2 - 2;
+    var max = Number(o.max) || 710;
+    var val = clamp(Number(o.value) || 0, 0, max);
+
+    var START = 135;
+    var SWEEP = 270;
+
+    function polar(deg, radius) {
+      var a = deg * Math.PI / 180;
+      return { x: cx + radius * Math.cos(a), y: cy + radius * Math.sin(a) };
+    }
+    function arcPath(fromDeg, toDeg, radius) {
+      var p1 = polar(fromDeg, radius);
+      var p2 = polar(toDeg, radius);
+      var large = (toDeg - fromDeg) > 180 ? 1 : 0;
+      return 'M' + n(p1.x) + ',' + n(p1.y) +
+        ' A' + n(radius) + ',' + n(radius) + ' 0 ' + large + ' 1 ' + n(p2.x) + ',' + n(p2.y);
+    }
+    var degOf = function (v) { return START + SWEEP * clamp(v / max, 0, 1); };
+
+    var body = '';
+
+    /* 分段色轨 */
+    var bands = Array.isArray(o.bands) && o.bands.length ? o.bands : [{ from: 0, to: max, color: 'var(--brand)' }];
+    bands.forEach(function (b) {
+      var d1 = degOf(b.from);
+      var d2 = degOf(b.to);
+      if (d2 <= d1) return;
+      body += '<path d="' + arcPath(d1, d2 - 0.7, r) + '" fill="none" stroke="' + (b.color || 'var(--brand)') +
+        '" stroke-width="' + th + '" stroke-linecap="butt" stroke-opacity=".22"/>';
+    });
+
+    /* 进度弧 */
+    var vd = degOf(val);
+    if (vd > START) {
+      var gid = uid('gg');
+      body += '<defs><linearGradient id="' + gid + '" x1="0" y1="1" x2="1" y2="0">' +
+        '<stop offset="0%" stop-color="var(--brand)"/><stop offset="100%" stop-color="var(--brand-2)"/></linearGradient></defs>';
+      body += '<path class="c-gauge" d="' + arcPath(START, vd, r) + '" fill="none" stroke="url(#' + gid + ')" ' +
+        'stroke-width="' + th + '" stroke-linecap="round"/>';
+    }
+
+    /* 刻度齿 */
+    for (var v = 0; v <= max; v += 100) {
+      var p1 = polar(degOf(v), r - th / 2 - 1);
+      var p2 = polar(degOf(v), r - th / 2 - 5);
+      body += '<line x1="' + n(p1.x) + '" y1="' + n(p1.y) + '" x2="' + n(p2.x) + '" y2="' + n(p2.y) +
+        '" stroke="currentColor" stroke-opacity=".28" stroke-width="1.2"/>';
+    }
+
+    /* 标记（如 425） */
+    (o.marks || []).forEach(function (m) {
+      if (!isNum(m.value)) return;
+      var pd = polar(degOf(Number(m.value)), r);
+      var pt = polar(degOf(Number(m.value)), r + th / 2 + 6);
+      body += '<circle cx="' + n(pd.x) + '" cy="' + n(pd.y) + '" r="2.4" fill="currentColor" fill-opacity=".55"/>';
+      if (m.label) {
+        body += '<text x="' + n(pt.x) + '" y="' + n(pt.y + 3) + '" text-anchor="middle" font-size="9" ' +
+          'font-weight="650" fill="currentColor" fill-opacity=".55">' + esc(m.label) + '</text>';
+      }
+    });
+
+    /* 中心数值 */
+    var big = n(val, 0);
+    body += '<text x="' + n(cx) + '" y="' + n(cy + size * 0.045) + '" text-anchor="middle" ' +
+      'font-size="' + n(Math.max(20, size * 0.25), 0) + '" font-weight="820" fill="currentColor" ' +
+      'style="font-variant-numeric:tabular-nums;letter-spacing:-1.2px">' + esc(big) + '</text>';
+    if (o.sub) {
+      body += '<text x="' + n(cx) + '" y="' + n(cy + size * 0.045 + Math.max(14, size * 0.115)) + '" ' +
+        'text-anchor="middle" font-size="10" fill="currentColor" fill-opacity=".55">' + esc(o.sub) + '</text>';
+    }
+    if (o.label) {
+      body += '<text x="' + n(cx) + '" y="' + n(cy - size * 0.16) + '" text-anchor="middle" font-size="9.5" ' +
+        'fill="currentColor" fill-opacity=".5">' + esc(o.label) + '</text>';
+    }
+
+    return '<svg viewBox="0 0 ' + n(size) + ' ' + n(size) + '" width="100%" height="' + n(size) +
+      '" role="img" aria-label="' + esc(o.aria || '仪表盘') + '" style="color:var(--ink)">' + body + '</svg>';
+  }
+
+  /* ============================== 迷你折线 ============================== */
+
+  function sparkline(o) {
+    o = o || {};
+    var W = Math.max(40, Math.round(o.width || 120));
+    var H = o.height || 34;
+    var vals = (o.values || []).filter(isNum).map(Number);
+    if (vals.length < 2) return '<svg viewBox="0 0 ' + n(W) + ' ' + n(H) + '" width="' + n(W) + '" height="' + n(H) + '"></svg>';
+    var lo = Math.min.apply(null, vals);
+    var hi = Math.max.apply(null, vals);
+    if (hi === lo) { hi = lo + 1; }
+    var color = o.color || 'var(--brand)';
+    var pad = 3;
+    var pts = vals.map(function (v, i) {
+      return {
+        x: n(pad + (W - pad * 2) * i / (vals.length - 1)),
+        y: n(H - pad - (v - lo) / (hi - lo) * (H - pad * 2))
+      };
+    });
+    var d = smoothPath(pts, pad, H - pad);
+    var out = '';
+    if (o.fill) {
+      out += '<path d="' + d + ' L' + n(pts[pts.length - 1].x) + ',' + n(H) + ' L' + n(pts[0].x) + ',' + n(H) +
+        ' Z" fill="' + color + '" fill-opacity=".12"/>';
+    }
+    out += '<path d="' + d + '" fill="none" stroke="' + color + '" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>';
+    out += '<circle cx="' + n(pts[pts.length - 1].x) + '" cy="' + n(pts[pts.length - 1].y) + '" r="2.6" fill="' + color + '"/>';
+    return '<svg viewBox="0 0 ' + n(W) + ' ' + n(H) + '" width="100%" height="' + n(H) +
+      '" role="img" aria-label="' + esc(o.aria || '迷你趋势') + '" style="color:var(--ink)">' + out + '</svg>';
+  }
+
+  /* ============================== 兼容别名 ============================== */
+
+  /** v1: lineChart → line */
+  function lineChart(o) { return line(o); }
+  /** v1: stackedBar → bar */
+  function stackedBar(o) { return bar(o); }
+  /** v1: ring → 简单环形进度 */
   function ring(o) {
+    o = o || {};
     var size = o.size || 112;
     var stroke = o.stroke || 9;
     var r = (size - stroke) / 2;
     var c = 2 * Math.PI * r;
-    var pct = clamp((o.value || 0) / (o.max || 1), 0, 1);
+    var pct = clamp((Number(o.value) || 0) / (Number(o.max) || 1), 0, 1);
     var dash = n(c * pct);
     var color = o.color || 'var(--brand)';
-    var center = size / 2;
-    return '<svg viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" role="img" aria-label="' +
-      esc(o.aria || '进度') + '">' +
-      '<defs><linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">' +
-      '<stop offset="0%" stop-color="' + color + '"/><stop offset="100%" stop-color="' + (o.color2 || color) + '"/></linearGradient></defs>' +
-      '<circle cx="' + center + '" cy="' + center + '" r="' + n(r) + '" fill="none" stroke="currentColor" stroke-opacity=".1" stroke-width="' + stroke + '"/>' +
-      '<circle cx="' + center + '" cy="' + center + '" r="' + n(r) + '" fill="none" stroke="url(#ringGrad)" stroke-width="' + stroke +
-      '" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + n(c - dash) + '" transform="rotate(-90 ' + center + ' ' + center + ')"/>' +
+    var color2 = o.color2 || color;
+    var gid = uid('rg');
+    return '<svg viewBox="0 0 ' + n(size) + ' ' + n(size) + '" width="' + n(size) + '" height="' + n(size) +
+      '" role="img" aria-label="' + esc(o.aria || '进度') + '">' +
+      '<defs><linearGradient id="' + gid + '" x1="0" y1="0" x2="1" y2="1">' +
+      '<stop offset="0%" stop-color="' + color + '"/><stop offset="100%" stop-color="' + color2 + '"/></linearGradient></defs>' +
+      '<circle cx="' + n(size / 2) + '" cy="' + n(size / 2) + '" r="' + n(r) + '" fill="none" stroke="currentColor" ' +
+      'stroke-opacity=".1" stroke-width="' + stroke + '"/>' +
+      '<circle cx="' + n(size / 2) + '" cy="' + n(size / 2) + '" r="' + n(r) + '" fill="none" stroke="url(#' + gid + ')" ' +
+      'stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + dash + ' ' + n(c - dash) +
+      '" transform="rotate(-90 ' + n(size / 2) + ' ' + n(size / 2) + ')"/>' +
       '</svg>';
   }
 
-  /* ------------------------------ tooltip ------------------------------ */
-  var tipEl = null, tipTimer = null;
+  /* ============================== 浮层提示 ============================== */
+
+  var tipTimer = null;
+  var tipEl = null;
 
   function ensureTip(wrap) {
     var t = wrap.querySelector('.chart-tip');
@@ -2275,64 +2974,91 @@ window.CET4_CONTENT = {
   }
 
   function showTip(wrap, html, x, y) {
-    var t = ensureTip(wrap);
-    t.innerHTML = html;
-    t.classList.add('show');
-    var w = t.offsetWidth;
-    var left = clamp(x, w / 2 + 6, wrap.clientWidth - w / 2 - 6);
-    t.style.left = left + 'px';
-    t.style.top = Math.max(30, y) + 'px';
+    if (!wrap) return;
+    tipEl = ensureTip(wrap);
+    tipEl.innerHTML = html;
+    tipEl.classList.add('show');
+    var w = tipEl.offsetWidth || 80;
+    var left = clamp(x, w / 2 + 4, Math.max(w / 2 + 4, wrap.clientWidth - w / 2 - 4));
+    tipEl.style.left = left + 'px';
+    tipEl.style.top = Math.max(26, y) + 'px';
   }
 
   function hideTip() {
     if (tipEl) tipEl.classList.remove('show');
+    tipEl = null;
+  }
+
+  function nodeOf(e) {
+    var t = e.target;
+    if (!t) return null;
+    if (t.closest) return t.closest('[data-tip]');
+    /* 兜底：手工向上找 */
+    while (t && t !== document) {
+      if (t.getAttribute && t.getAttribute('data-tip')) return t;
+      t = t.parentNode;
+    }
+    return null;
   }
 
   function bindTooltips(container) {
+    if (!container || container.getAttribute('data-tipbound') === '1') return;
+    container.setAttribute('data-tipbound', '1');
+
     container.addEventListener('pointerover', function (e) {
-      var node = e.target.closest && e.target.closest('[data-tip]');
+      var node = nodeOf(e);
       if (!node) return;
-      var wrap = node.closest('.chart-wrap');
+      var wrap = node.closest ? node.closest('.chart-wrap') : null;
       if (!wrap) return;
-      tipEl = ensureTip(wrap);
       var rect = wrap.getBoundingClientRect();
       var nr = node.getBoundingClientRect();
       showTip(wrap, node.getAttribute('data-tip'), nr.left - rect.left + nr.width / 2, nr.top - rect.top);
       clearTimeout(tipTimer);
     });
+
     container.addEventListener('pointerout', function (e) {
-      var node = e.target.closest && e.target.closest('[data-tip]');
+      var node = nodeOf(e);
       if (!node) return;
       clearTimeout(tipTimer);
-      tipTimer = setTimeout(hideTip, 60);
+      tipTimer = setTimeout(hideTip, 70);
     });
+
     container.addEventListener('pointerdown', function (e) {
-      var node = e.target.closest && e.target.closest('[data-tip]');
+      var node = nodeOf(e);
       if (!node) return;
-      var wrap = node.closest('.chart-wrap');
+      var wrap = node.closest ? node.closest('.chart-wrap') : null;
       if (!wrap) return;
-      tipEl = ensureTip(wrap);
       var rect = wrap.getBoundingClientRect();
       var nr = node.getBoundingClientRect();
       showTip(wrap, node.getAttribute('data-tip'), nr.left - rect.left + nr.width / 2, nr.top - rect.top);
       clearTimeout(tipTimer);
-      tipTimer = setTimeout(hideTip, 2200);
+      tipTimer = setTimeout(hideTip, 2400);
     }, { passive: true });
+
     container.addEventListener('pointerup', function () {
       clearTimeout(tipTimer);
-      tipTimer = setTimeout(hideTip, 900);
+      tipTimer = setTimeout(hideTip, 1400);
     }, { passive: true });
   }
 
+  /* ============================== 导出 ============================== */
+
   root.CET4_CHARTS = {
-    lineChart: lineChart,
-    stackedBar: stackedBar,
+    line: line,
+    bar: bar,
     hbars: hbars,
-    ring: ring,
+    donut: donut,
+    gauge: gauge,
+    sparkline: sparkline,
     bindTooltips: bindTooltips,
     esc: esc,
     n: n,
-    niceStep: niceStep
+    niceStep: niceStep,
+    textWidth: textWidth,
+    /* v1 兼容 */
+    lineChart: lineChart,
+    stackedBar: stackedBar,
+    ring: ring
   };
 })(typeof window !== 'undefined' ? window : globalThis);
 
@@ -2687,6 +3413,33 @@ window.CET4_CONTENT = {
   function fmtInt(n) { return Math.round(Number(n) || 0); }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
+  /* ---------------- 图表 API 适配层 ----------------
+     charts.js 可能提供 v2 命名（line/bar/gauge/donut）或旧命名（lineChart/stackedBar/ring），
+     这里统一封装，两种版本都能工作。 */
+  var CHart = {
+    line: function (o) { return CH.line ? CH.line(o) : CH.lineChart(o); },
+    bar: function (o) { return CH.bar ? CH.bar(o) : CH.stackedBar(o); },
+    hbars: function (o) { return CH.hbars(o); },
+    donut: function (o) {
+      if (CH.donut) return CH.donut(o);
+      var total = o.segments.reduce(function (s, x) { return s + (Number(x.value) || 0); }, 0);
+      return CH.ring({
+        value: total, max: 710, size: o.size,
+        stroke: o.thickness || 16,
+        color: (o.segments[0] || {}).color || 'var(--brand)',
+        aria: o.aria
+      });
+    },
+    gauge: function (o) {
+      if (CH.gauge) return CH.gauge(o);
+      return CH.ring({
+        value: o.value, max: o.max, size: o.size,
+        stroke: Math.max(8, Math.round((o.size || 150) * 0.07)),
+        color: 'var(--brand)', color2: 'var(--brand-2)', aria: o.aria
+      });
+    }
+  };
+
   var ICON = {
     home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5"/>',
     edit: '<path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 6.5l3 3"/>',
@@ -2845,17 +3598,21 @@ window.CET4_CONTENT = {
 
   var chartTasks = [];
 
+  /* 入场动画只在首次绘制时播放；resize 重绘时不再重播（否则拖动窗口会闪） */
+  var animateNext = true;
+
   function mountChart(el, draw) {
     if (!el) return;
     chartTasks.push({ el: el, draw: draw });
-    paintChart(el, draw);
+    paintChart(el, draw, animateNext);
   }
 
-  function paintChart(el, draw) {
+  function paintChart(el, draw, animate) {
     var w = Math.floor(el.clientWidth);
     if (!w) return;
     try {
       el.innerHTML = draw(w);
+      el.classList.toggle('no-anim', !animate);
     } catch (e) {
       el.innerHTML = '<div class="chart-empty">图表渲染失败</div>';
     }
@@ -2867,7 +3624,11 @@ window.CET4_CONTENT = {
     resizeRaf = requestAnimationFrame(function () {
       chartTasks.forEach(function (t) {
         if (!document.body.contains(t.el)) return;
-        paintChart(t.el, t.draw);
+        /* 宽度没变就不重绘，避免无谓的动画重播与抖动 */
+        var w = Math.floor(t.el.clientWidth);
+        if (t.lastW === w) return;
+        t.lastW = w;
+        paintChart(t.el, t.draw, false);
       });
     });
   }
@@ -2879,7 +3640,7 @@ window.CET4_CONTENT = {
     var trends = M.trendStats(list);
 
     if (!list.length) {
-      return '<div class="card">' + emptyState() + '</div>';
+      return '<section class="card">' + emptyState() + '</section>';
     }
 
     var latest = list[list.length - 1];
@@ -2887,76 +3648,90 @@ window.CET4_CONTENT = {
     var tp = A.targetProgress(latest, state.target);
     var delta = trends.delta;
     var deltaTone = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
-    var deltaTxt = trends.count > 1 ? (delta > 0 ? '↑' : delta < 0 ? '↓' : '→') + ' ' + Math.abs(delta) + ' 分' : '首次记录';
+    var deltaTxt = trends.count > 1
+      ? (delta > 0 ? '↑' : delta < 0 ? '↓' : '→') + ' ' + Math.abs(delta) + ' 分'
+      : '首次记录';
 
     var html = '';
 
-    /* --- 主卡片 --- */
-    html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('chart') + '最新估分</div>' +
-      '<span class="badge ghost">' + esc(fullDate(latest.date)) + '</span></div>' +
+    /* 主卡片：仪表盘 + 结论 + 指标 */
+    html += '<section class="card hero-card">' +
+      '<div class="card-head tight"><div class="card-title">' + icon('chart') + '最新估分</div>' +
+      '<span class="card-sub">' + esc(fullDate(latest.date)) + '</span></div>' +
       '<div class="hero">' +
-      '<div class="ring">' +
-      CH.ring({ value: latest.total, max: 710, size: 104, stroke: 9, color: 'var(--brand)', color2: 'var(--brand-2)', aria: '估分' }) +
-      '<div class="ring-txt"><b>' + fmtInt(latest.total) + '</b><span>/ 710</span></div>' +
-      '</div>' +
+      '<div class="gauge-slot" id="gaugeSlot"></div>' +
       '<div class="hero-main">' +
-      '<div class="tone-bar wrap" style="margin-bottom:6px"><span class="tone-chip">' + esc(band.label) + '</span>' +
+      '<div class="tone-bar wrap" style="margin-bottom:7px"><span class="tone-chip">' + esc(band.label) + '</span>' +
       '<span class="badge ' + (latest.passReached ? 'strong' : 'weak') + '">' + (latest.passReached ? '已达 425' : '未达 425') + '</span>' +
       (latest.zeroed ? '<span class="badge poor">≤220 记 0 分</span>' : '') + '</div>' +
-      '<div class="hero-title">' + esc(band.tagline || '') + '</div>' +
-      '<div class="hero-desc">常模百分位约 ' + latest.percentile + '% · 较上次 <span class="' + deltaTone + '" style="font-weight:700">' + esc(deltaTxt) + '</span></div>' +
-      '<div style="margin-top:9px"><div class="track"><i style="width:' + tp.pct + '%"></i></div>' +
-      '<div class="part-meta" style="display:flex;justify-content:space-between;margin-top:5px">' +
-      '<span>目标 ' + tp.target + ' 分</span><span>' + (tp.reached ? '已达成 +' + (Math.round(latest.total) - tp.target) : '还差 ' + tp.gap) + '</span></div></div>' +
+      '<div class="hero-title">' + esc(band.tagline || band.label) + '</div>' +
+      '<div class="hero-desc">常模百分位约 ' + latest.percentile + '% · 较上次 <b class="' + deltaTone + '">' + esc(deltaTxt) + '</b></div>' +
+      '<div style="margin-top:10px"><div class="track"><i style="width:' + tp.pct + '%"></i></div>' +
+      '<div class="gauge-meta"><span>目标 ' + tp.target + ' 分</span>' +
+      '<span class="' + (tp.reached ? 'up' : 'flat') + '" style="font-weight:700">' +
+      (tp.reached ? '已达成 +' + (Math.round(latest.total) - tp.target) : '还差 ' + tp.gap + ' 分') + '</span></div></div>' +
       '</div></div>' +
-      '<div class="stat-grid" style="margin-top:14px">' +
-      statCell('考试次数', String(trends.count), '共录入 ' + trends.count + ' 次', 'flat') +
-      statCell('历史最高', String(fmtInt(trends.best.total)), esc(shortDate(trends.best.date)) + ' 取得', 'up') +
-      statCell('平均分', String(Math.round(trends.avg)), '波动 ' + trends.volatility + ' 分', 'flat') +
-      statCell('趋势斜率', (trends.slope > 0 ? '+' : '') + trends.slope, trends.improving ? '稳步提升' : trends.slope < -2 ? '有所回落' : '基本持平', trends.slope > 0 ? 'up' : trends.slope < 0 ? 'down' : 'flat') +
+      '<div class="stat-grid" style="margin-top:15px">' +
+      statCell('考试次数', String(trends.count), '已录入 ' + trends.count + ' 次', 'flat') +
+      statCell('历史最高', String(fmtInt(trends.best.total)), '于 ' + esc(shortDate(trends.best.date)), 'up') +
+      statCell('平均分', String(Math.round(trends.avg)), '波动 ±' + trends.volatility, 'flat') +
+      statCell('趋势斜率', (trends.slope > 0 ? '+' : '') + trends.slope,
+        trends.improving ? '稳步提升' : trends.slope < -2 ? '有所回落' : '基本持平',
+        trends.slope > 0 ? 'up' : trends.slope < 0 ? 'down' : 'flat') +
       '</div></section>';
 
-    /* --- 板块得分 --- */
-    var secRows = latest.sections.map(function (s) {
-      return { label: s.label, value: s.report, max: s.reportMax, color: sectionColor(s.key), sub: '得分率 ' + s.rate + '%' };
-    });
+    /* 双栏 */
+    html += '<div class="grid-2"><div class="col">';
+
+    /* 趋势 */
+    html += '<section class="card">' +
+      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩趋势</div>' +
+      '<span class="card-sub">' + trends.count + ' 次记录</span></div>' +
+      segHtml([{ key: 'total', label: '总分' }, { key: 'parts', label: '分项' }], state.chartMode, 'chart-mode') +
+      '<div class="chart-wrap" id="chartTrend" style="margin-top:10px"></div>' +
+      (state.chartMode === 'parts' ? legendHtml() : '') +
+      '</section>';
+
+    /* 成绩构成 */
+    html += '<section class="card">' +
+      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩构成</div>' +
+      '<span class="card-sub">最近 ' + Math.min(6, list.length) + ' 次</span></div>' +
+      '<div class="chart-wrap" id="chartStack"></div>' +
+      '<div class="legend">' + latestSectionsLegend() + '</div>' +
+      '</section>';
+
+    html += '</div><div class="col">';
+
+    /* 各部分得分 */
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('spark') + '各部分得分</div>' +
       '<span class="card-sub">满分 710</span></div>' +
       '<div class="chart-wrap" id="chartSections"></div>' +
       '</section>';
 
-    /* --- 趋势 --- */
+    /* 得分贡献 */
     html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩趋势</div>' +
-      '<span class="card-sub">' + trends.count + ' 次记录</span></div>' +
-      segHtml([{ key: 'total', label: '总分' }, { key: 'parts', label: '分项' }], state.chartMode, 'chart-mode') +
-      '<div class="chart-wrap" id="chartTrend" style="margin-top:12px"></div>' +
-      (state.chartMode === 'parts' ? legendHtml() : '') +
-      '</section>';
+      '<div class="card-head"><div class="card-title">' + icon('target') + '得分贡献</div>' +
+      '<span class="card-sub">共 ' + fmt1(latest.total) + ' 分</span></div>' +
+      '<div class="donut-row">' +
+      '<div class="chart-wrap donut-wrap" id="chartDonut"></div>' +
+      '<div class="donut-legend" id="donutLegend"></div>' +
+      '</div></section>';
 
-    /* --- 结构堆叠 --- */
-    html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩构成</div>' +
-      '<span class="card-sub">最近 ' + Math.min(6, list.length) + ' 次</span></div>' +
-      '<div class="chart-wrap" id="chartStack"></div>' +
-      '<div class="legend">' + stackLegend() + '</div>' +
-      '</section>';
-
-    /* --- 最近记录 --- */
+    /* 最近记录 */
     html += '<section class="card flush">' +
       '<div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '最近记录</div>' +
       '<button class="btn sm btn-ghost" data-act="tab" data-view="records">全部</button></div>' +
       list.slice(-3).reverse().map(recordRow).join('') +
       '</section>';
 
-    /* --- 赋分依据 --- */
+    html += '</div></div>';
+
+    /* 赋分依据 */
     html += formulaCard(latest);
 
     return html;
   }
-
   /* 赋分依据卡片：把「原始分 → 侧重与折算 → 报道分」讲清楚 */
   function formulaCard(latest) {
     var rowsHtml = M.SECTIONS.map(function (sec) {
@@ -3024,10 +3799,12 @@ window.CET4_CONTENT = {
     var d = state.draft;
     var html = '';
 
+    html += '<div class="entry-layout"><div class="col entry-main">';
+
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('edit') + '录入本次成绩</div>' +
       '<span class="badge ghost">第 ' + (state.records.length + 1) + ' 次</span></div>' +
-      '<div class="note" style="margin-bottom:12px">选择录入方式：按<b>答对题数</b>录入最省事，系统按官方每题分值自动折算；已知报道分时可切换为按<b>报道分</b>直接录入。</div>' +
+      '<div class="note" style="margin-bottom:11px">按<b>答对题数</b>录入最省事，系统按官方每题分值自动折算；已知报道分可切换为按<b>报道分</b>录入。</div>' +
       segHtml([
         { key: 'items', label: '按答对题数' },
         { key: 'report', label: '按报道分' }
@@ -3038,10 +3815,10 @@ window.CET4_CONTENT = {
     M.SECTIONS.forEach(function (sec) {
       if (sec.kind !== 'objective') return;
       html += '<section class="card tone-' + sec.key + '">' +
-        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span>' +
-        '<span class="card-sub">' + sec.parts.reduce(function (s, p) { return s + p.count; }, 0) + ' 题 · ' +
-        sec.ratio + '% 分值 · ' + sec.reportMax + ' 分</span></div>' +
-        '<span class="badge ghost" data-sec-out="' + sec.key + '">0 分</span></div>';
+        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span></div>' +
+        '<span class="badge ghost" data-sec-out="' + sec.key + '">0 分</span></div>' +
+        '<div class="sec-meta">' + sec.parts.reduce(function (s, p) { return s + p.count; }, 0) + ' 题 · ' +
+        sec.ratio + '% 分值 · 满分 ' + sec.reportMax + ' 分</div>';
 
       sec.parts.forEach(function (part) {
         html += partRow(part, d);
@@ -3056,11 +3833,10 @@ window.CET4_CONTENT = {
       var tier = M.tierOf(val);
       var cTier = ((C.tiers || {})[sec.tierType] || []).filter(function (t) { return t.key === tier.key; })[0];
       html += '<section class="card tone-' + key + '">' +
-        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span>' +
-        '<span class="card-sub">15 分制 · ' + sec.ratio + '% 分值 · ' + sec.reportMax + ' 分</span></div>' +
+        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span></div>' +
         '<span class="badge ' + (val >= 10 ? 'strong' : val >= 7 ? 'ok' : 'weak') + '" data-tier-out="' + key + '">' + esc(tier.label) + '</span></div>' +
         '<div class="part-top" style="align-items:center">' +
-        '<div class="part-meta">按 15 分制自评（官方五档总体印象评分）</div>' +
+        '<div class="part-meta">15 分制自评 · ' + sec.ratio + '% 分值 · 满分 ' + sec.reportMax + ' 分</div>' +
         '<div class="part-score"><b data-sub-out="' + key + '">' + val + '</b><span> / 15 · ≈ ' + fmt1(val * M.POINT) + ' 分</span></div>' +
         '</div>' +
         '<input class="range" type="range" min="0" max="15" step="1" value="' + val + '" data-range="' + key + '" ' +
@@ -3070,7 +3846,7 @@ window.CET4_CONTENT = {
           return '<button type="button" class="chip" data-act="sub-preset" data-key="' + key + '" data-val="' + v + '" aria-pressed="' + (val === v) + '">' + v + ' 分<small>' + M.tierOf(v).label + '</small></button>';
         }).join('') +
         '</div>' +
-        '<div class="note" style="margin-top:10px" data-tier-desc="' + key + '">' + esc(cTier ? cTier.desc : '') + '</div>' +
+        '<div class="note" style="margin-top:9px" data-tier-desc="' + key + '">' + esc(cTier ? cTier.desc : '') + '</div>' +
         '<details class="acc"><summary>查看五档评分标准' + icon('chevron', 'caret') + '</summary>' +
         '<div class="acc-body"><table class="tbl"><tbody>' +
         ((C.tiers || {})[sec.tierType] || []).map(function (t) {
@@ -3082,12 +3858,12 @@ window.CET4_CONTENT = {
 
     /* 元信息 */
     html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('clock') + '录入时间与备注</div></div>' +
+      '<div class="card-head"><div class="card-title">' + icon('clock') + '时间与备注</div></div>' +
       '<div class="form-grid two">' +
       '<div class="field"><label for="inDate">考试 / 模考时间</label>' +
       '<input class="input" id="inDate" type="datetime-local" value="' + esc(d.date) + '" data-field="date"></div>' +
       '<div class="field"><label for="inNote">备注（可选）</label>' +
-      '<input class="input" id="inNote" type="text" maxlength="30" placeholder="如：真题第 3 套、某机构模考" value="' + esc(d.note || '') + '" data-field="note"></div>' +
+      '<input class="input" id="inNote" type="text" maxlength="30" placeholder="如：真题第 3 套" value="' + esc(d.note || '') + '" data-field="note"></div>' +
       '</div></section>';
 
     html += '<div class="btn-row">' +
@@ -3095,10 +3871,15 @@ window.CET4_CONTENT = {
       '<button class="btn btn-primary" data-act="save">' + icon('check') + '保存并分析</button>' +
       '</div>';
 
-    html += '<div id="previewRoot"></div>';
+    html += '</div>';
+
+    /* 右栏：实时预览（宽屏吸顶侧栏，手机端浮动底部） */
+    html += '<div class="entry-side"><div id="previewRoot"></div>' +
+      '<div class="side-tip card pad-sm" id="sideTip"></div></div>';
+
+    html += '</div>';
     return html;
   }
-
   function partRow(part, d) {
     var val = Number(d.parts[part.key]) || 0;
     var report = fmt1(val * part.perItem);
@@ -3132,21 +3913,73 @@ window.CET4_CONTENT = {
     return '<div class="preview" id="preview">' +
       '<div class="preview-top">' +
       '<div><div class="pv-label">实时估分</div>' +
-      '<div class="pv-score"><b>' + fmtInt(r.total) + '</b><span>/ 710</span></div>' +
-      '<div class="pv-label" style="margin-top:3px;opacity:.75">原始分合计 ' + fmt1(r.rawTotal) + ' / 100</div></div>' +
+      '<div class="pv-score"><b data-pv-score>' + fmtInt(r.total) + '</b><span>/ 710</span></div>' +
+      '<div class="pv-label" style="margin-top:2px;opacity:.72">原始分 ' + fmt1(r.rawTotal) + ' / 100</div></div>' +
       '<div class="pv-right"><div class="pv-badge">' + esc(band.label) + '</div>' +
-      '<div class="pv-label" style="margin-top:5px">' + (tp.reached ? '已超目标 ' + (Math.round(r.total) - tp.target) + ' 分' : '距 ' + tp.target + ' 还差 ' + tp.gap + ' 分') + '</div></div>' +
+      '<div class="pv-label" style="margin-top:5px">' +
+      (tp.reached ? '超目标 ' + (Math.round(r.total) - tp.target) + ' 分' : '距 ' + tp.target + ' 差 ' + tp.gap) + '</div></div>' +
       '</div>' +
       '<div class="pv-bars">' + bars + '</div>' +
-      (r.zeroed ? '<div class="pv-label" style="margin-top:9px;opacity:.9">⚠ 总分 ≤ 220 分时官方记为 0 分</div>' : '') +
+      (r.zeroed ? '<div class="pv-label" style="margin-top:8px;opacity:.92">⚠ 总分 ≤ 220 分官方记 0 分</div>' : '') +
       '</div>';
   }
 
-  function refreshPreview() {
+  /* 局部更新预览：避免整块重建造成闪烁 */
+  function patchPreview() {
     var root = $('#previewRoot');
     if (!root) return;
-    root.innerHTML = previewHtml();
+    var pv = root.querySelector('#preview');
+    if (!pv) { root.innerHTML = previewHtml(); updateEntryOutputs(); renderSideTip(); return; }
+
+    var r = draftResult();
+    var band = A.bandContent(r.bandKey);
+    var tp = A.targetProgress(r, state.target);
+
+    var scoreEl = pv.querySelector('[data-pv-score]');
+    if (scoreEl) {
+      var next = String(fmtInt(r.total));
+      if (scoreEl.textContent !== next) {
+        scoreEl.textContent = next;
+        scoreEl.classList.remove('bump');
+        void scoreEl.offsetWidth;
+        scoreEl.classList.add('bump');
+      }
+    }
+    var badge = pv.querySelector('.pv-badge');
+    if (badge) badge.textContent = band.label;
+    var right = pv.querySelector('.pv-right .pv-label');
+    if (right) {
+      right.textContent = tp.reached
+        ? '超目标 ' + (Math.round(r.total) - tp.target) + ' 分'
+        : '距 ' + tp.target + ' 差 ' + tp.gap;
+    }
+    var bars = pv.querySelectorAll('.pv-bar');
+    r.sections.forEach(function (s, i) {
+      var bar = bars[i];
+      if (!bar) return;
+      var val = bar.querySelector('.lbl b');
+      if (val) val.textContent = fmt1(s.report);
+      var fill = bar.querySelector('.t > i');
+      if (fill) fill.style.width = fmt1(s.rate) + '%';
+    });
     updateEntryOutputs();
+    renderSideTip();
+  }
+
+  function renderSideTip() {
+    var tip = $('#sideTip');
+    if (!tip) return;
+    var r = draftResult();
+    var an = A.analyze(r, { target: state.target, weeks: state.weeks });
+    var items = an.diagnoses.slice(0, 3).map(function (d) {
+      return '<li>' + esc(d.title) + '</li>';
+    }).join('');
+    tip.innerHTML = '<div class="card-head tight"><div class="card-title">' + icon('spark') + '即时提示</div></div>' +
+      '<ul class="advice">' + items + '</ul>';
+  }
+
+  function refreshPreview() {
+    patchPreview();
   }
 
   function updateEntryOutputs() {
@@ -3188,37 +4021,47 @@ window.CET4_CONTENT = {
 
   function viewAnalysis() {
     var list = allResults();
-    if (!list.length) return '<div class="card">' + emptyState() + '</div>';
+    if (!list.length) return '<section class="card">' + emptyState() + '</section>';
     var latest = list[list.length - 1];
     var trends = M.trendStats(list);
     var an = A.analyze(latest, { target: state.target, trends: trends, weeks: state.weeks });
     var html = '';
 
-    /* --- 结论 --- */
+    /* 结论 */
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('spark') + '综合诊断</div>' +
-      '<button class="btn sm btn-ghost" data-act="copy-report">复制报告</button></div>' +
+      '<button class="btn sm btn-ghost" data-act="copy-report">' + icon('download') + '复制报告</button></div>' +
       '<div class="hero">' +
       '<div class="ring">' + CH.ring({ value: latest.total, max: 710, size: 96, stroke: 8, color: 'var(--brand)', color2: 'var(--brand-2)' }) +
       '<div class="ring-txt"><b>' + fmtInt(latest.total) + '</b><span>/ 710</span></div></div>' +
       '<div class="hero-main"><div class="hero-title">' + esc(an.band.tagline || an.band.label) + '</div>' +
-      '<div class="hero-desc" style="margin-top:6px">' + esc(an.summary) + '</div></div>' +
+      '<div class="hero-desc" style="margin-top:5px">' + esc(an.summary) + '</div></div>' +
       '</div>' +
-      '<div class="note" style="margin-top:12px">' + esc(an.band.desc || '') + '</div>' +
+      '<div class="note" style="margin-top:11px">' + esc(an.band.desc || '') + '</div>' +
       '</section>';
 
-    /* --- 诊断条目 --- */
+    html += '<div class="grid-2"><div class="col">';
+
+    /* 关键发现 */
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('target') + '关键发现</div>' +
       '<span class="card-sub">' + an.diagnoses.length + ' 条</span></div>' +
       '<div class="diag">' + an.diagnoses.map(function (d) {
-        return '<div class="diag-item"><span class="di">' + d.icon + '</span><div><b>' + esc(d.title) + '</b><br>' + esc(d.text) + '</div></div>';
+        return '<div class="diag-item ' + (d.level || '') + '"><span class="di">' + d.icon + '</span>' +
+          '<div><b>' + esc(d.title) + '</b><br>' + esc(d.text) + '</div></div>';
       }).join('') + '</div></section>';
 
-    /* --- 目标与提分路径 --- */
+    /* 得分率 */
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('chart') + '各部分得分率</div>' +
+      '<span class="card-sub">越低越该补</span></div><div class="chart-wrap" id="chartRate"></div>' +
+      '<div class="note" style="margin-top:7px">得分率 = 该部分报道分 ÷ 该部分满分。</div></section>';
+
+    html += '</div><div class="col">';
+
+    /* 提分路径 */
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('arrow') + '提分路径</div>' +
       '<span class="card-sub">目标 ' + state.target + ' 分</span></div>' +
-      '<div class="chips" style="margin-bottom:12px">' +
+      '<div class="chips" style="margin-bottom:11px">' +
       [425, 450, 500, 550, 600].map(function (t) {
         return '<button class="chip" data-act="target" data-target="' + t + '" aria-pressed="' + (t === state.target) + '">' + t + ' 分</button>';
       }).join('') + '</div>' +
@@ -3228,24 +4071,28 @@ window.CET4_CONTENT = {
             '<div class="plan-main"><div class="plan-title">' + esc(s.title) + '</div><div class="plan-sub">' + esc(s.sub) + '</div></div>' +
             '<div class="plan-gain">' + esc(s.gain) + '</div></div>';
         }).join('') + '</div>' +
-        '<div class="note" style="margin-top:10px">' + esc(an.plan.message) + '</div>'
+        '<div class="note" style="margin-top:9px">' + esc(an.plan.message) + '</div>'
         : '<div class="note">当前估分已超过 ' + state.target + ' 分目标，可把目标上调一档继续冲击。</div>') +
       '</section>';
 
-    /* --- 各部分得分率 --- */
-    var rows = an.rows.slice().sort(function (a, b) { return a.rate - b.rate; }).map(function (s) {
-      return { label: s.label + ' ' + s.report, value: s.rate, max: 100, color: sectionColor(s.key), sub: '失分 ' + s.loss + ' 分 / 满分 ' + s.max };
-    });
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('chart') + '各部分得分率</div>' +
-      '<span class="card-sub">单位 %</span></div><div class="chart-wrap" id="chartRate"></div>' +
-      '<div class="note" style="margin-top:6px">得分率 = 该部分报道分 ÷ 该部分满分。越低的分项越值得优先投入。</div></section>';
+    /* 学习计划 */
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('clock') + '学习计划</div>' +
+      '<span class="card-sub">按距考试时间</span></div>' +
+      '<div class="chips">' +
+      [['long', '10 周以上'], ['mid', '5~9 周'], ['short', '2~4 周'], ['sprint', '考前周']].map(function (x) {
+        return '<button class="chip" data-act="stage" data-stage="' + x[0] + '" aria-pressed="' + (state.planKey === x[0]) + '">' + esc(x[1]) + '</button>';
+      }).join('') + '</div>' +
+      '<div id="stageBody" style="margin-top:11px"></div>' +
+      '</section>';
 
-    /* --- 题型明细 --- */
+    html += '</div></div>';
+
+    /* 题型明细 */
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('list') + '题型明细</div>' +
       '<span class="card-sub">共 57 题 / 100%</span></div>';
     M.SECTIONS.forEach(function (sec) {
       if (sec.kind !== 'objective') return;
-      html += '<div class="sec-title" style="margin-top:6px"><span class="tone-chip" style="--tone:' + sectionColor(sec.key) + '">' + esc(sec.label) + '</span></div>';
+      html += '<div class="sec-title"><span class="tone-chip" style="--tone:' + sectionColor(sec.key) + '">' + esc(sec.label) + '</span></div>';
       sec.parts.forEach(function (part) {
         var p = an.parts.filter(function (x) { return x.key === part.key; })[0];
         var typeC = (((C.sections || {})[sec.key] || {}).types || {})[part.key] || {};
@@ -3256,7 +4103,7 @@ window.CET4_CONTENT = {
           '</div>' +
           '<div class="part-meta">答对 ' + p.correct + '/' + p.count + '（' + p.accuracy + '%）· 每题 ' + fmt1(p.perItem) + ' 分 · 失分 ' + fmt1(p.loss) + '</div>' +
           '<div class="track thin" style="--tone:' + sectionColor(sec.key) + '"><i style="width:' + p.accuracy + '%"></i></div>' +
-          (typeC.focus ? '<div class="note" style="margin-top:8px">' + esc(typeC.focus) + '</div>' : '') +
+          (typeC.focus ? '<div class="note" style="margin-top:7px">' + esc(typeC.focus) + '</div>' : '') +
           '<details class="acc"><summary>这个题型怎么提' + icon('chevron', 'caret') + '</summary><div class="acc-body">' +
           '<ul class="advice">' +
           (p.accuracy < 72 ? (typeC.weak || []) : (typeC.strong || [])).concat(typeC.tips || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') +
@@ -3275,19 +4122,9 @@ window.CET4_CONTENT = {
     });
     html += '</section>';
 
-    /* --- 学习计划 --- */
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('clock') + '学习计划</div>' +
-      '<span class="card-sub">距考试可选</span></div>' +
-      '<div class="chips">' +
-      [['long', '10 周以上'], ['mid', '5~9 周'], ['short', '2~4 周'], ['sprint', '考前周']].map(function (x) {
-        var active = state.planKey === x[0];
-        return '<button class="chip" data-act="stage" data-stage="' + x[0] + '" aria-pressed="' + active + '">' + esc(x[1]) + '</button>';
-      }).join('') + '</div>' +
-      '<div id="stageBody" style="margin-top:12px"></div>' +
-      '</section>';
-
-    /* --- 建议动作 --- */
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('check') + '现在就该做的事</div></div>' +
+    /* 建议动作 */
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('check') + '现在就该做的事</div>' +
+      '<span class="card-sub">按优先级排序</span></div>' +
       '<ul class="advice">' + an.actions.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' +
       '</section>';
 
@@ -3310,29 +4147,40 @@ window.CET4_CONTENT = {
   function viewRecords() {
     var list = allResults();
     if (!list.length) {
-      return '<div class="card">' + emptyState() + '</div>';
+      return '<section class="card">' + emptyState() + '</section>';
     }
     var trends = M.trendStats(list);
     var html = '';
 
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('list') + '全部记录</div>' +
       '<span class="card-sub">' + list.length + ' 次 · 平均 ' + Math.round(trends.avg) + ' 分</span></div>' +
-      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
-      '<table class="tbl" style="min-width:330px"><thead><tr>' +
+      '<div class="stat-grid" style="margin-bottom:14px">' +
+      statCell('记录数', String(trends.count), '含示例与正式', 'flat') +
+      statCell('最高分', String(fmtInt(trends.best.total)), '于 ' + esc(shortDate(trends.best.date)), 'up') +
+      statCell('最低分', String(fmtInt(trends.worst.total)), '于 ' + esc(shortDate(trends.worst.date)), 'down') +
+      statCell('波动', '±' + trends.volatility, trends.stable ? '较稳定' : '波动偏大', trends.stable ? 'flat' : 'down') +
+      '</div>' +
+      '<div class="tbl-scroll">' +
+      '<table class="tbl" style="min-width:340px"><thead><tr>' +
       '<th>录入时间</th><th>听力</th><th>阅读</th><th>写作</th><th>翻译</th><th>总分</th></tr></thead><tbody>' +
       list.slice().reverse().map(function (r) {
-        return '<tr><td style="white-space:nowrap">' + esc(fullDate(r.date)) + (r.note ? '<br><span style="color:var(--muted);font-size:11px">' + esc(r.note) + '</span>' : '') + '</td>' +
+        return '<tr><td style="white-space:nowrap">' + esc(fullDate(r.date)) +
+          (r.note ? '<br><span class="muted" style="font-size:10.5px">' + esc(r.note) + '</span>' : '') + '</td>' +
           '<td>' + fmt1(r.sections[1].report) + '</td><td>' + fmt1(r.sections[2].report) + '</td>' +
           '<td>' + fmt1(r.sections[0].report) + '</td><td>' + fmt1(r.sections[3].report) + '</td>' +
           '<td class="acc">' + fmtInt(r.total) + '</td></tr>';
       }).join('') +
       '</tbody></table></div></section>';
 
+    html += '<div class="grid-2"><div class="col">';
+
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('chart') + '成绩构成对比</div>' +
       '<span class="card-sub">最近 ' + Math.min(8, list.length) + ' 次</span></div>' +
       '<div class="chart-wrap" id="chartStackAll"></div><div class="legend">' + latestSectionsLegend() + '</div></section>';
 
-    html += '<section class="card flush"><div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '管理</div></div>' +
+    html += '</div><div class="col">';
+
+    html += '<section class="card flush"><div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '管理记录</div></div>' +
       list.slice().reverse().map(function (r) {
         return '<div class="rec">' +
           '<div class="rec-dot" style="background:' + (r.passReached ? 'var(--ok)' : 'var(--bad)') + '"></div>' +
@@ -3344,13 +4192,16 @@ window.CET4_CONTENT = {
       }).join('') +
       '</section>';
 
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('download') + '数据备份</div></div>' +
-      '<div class="note" style="margin-bottom:12px">记录保存在本机浏览器（localStorage），不上传服务器。换设备或清理浏览器前请先导出备份。</div>' +
-      '<div class="btn-row" style="margin-bottom:10px">' +
+    html += '</div></div>';
+
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('download') + '数据备份</div>' +
+      '<span class="card-sub">仅存本机</span></div>' +
+      '<div class="note" style="margin-bottom:11px">记录保存在本机浏览器（localStorage），不上传服务器。换设备或清理浏览器前请先导出备份。</div>' +
+      '<div class="btn-row" style="margin-bottom:9px">' +
       '<button class="btn btn-ghost" data-act="export">' + icon('download') + '导出 JSON</button>' +
       '<button class="btn btn-ghost" data-act="choose-import">' + icon('upload') + '导入备份</button></div>' +
       '<input type="file" id="fileImport" accept="application/json,.json" hidden>' +
-      '<button class="btn btn-ghost btn-block" data-act="wipe" style="color:var(--bad)">清空全部记录</button>' +
+      '<button class="btn btn-ghost btn-block danger" data-act="wipe">' + icon('trash') + '清空全部记录</button>' +
       '</section>';
 
     return html;
@@ -3362,10 +4213,10 @@ window.CET4_CONTENT = {
     return '<div class="empty">' +
       '<div class="em-ico">' + icon('chart') + '</div>' +
       '<h3>还没有成绩记录</h3>' +
-      '<p>录入一次四级模考或真题成绩，系统会按官方分值结构折算 710 分制报道分，并生成趋势图与针对性分析。</p>' +
-      '<div class="btn-row" style="margin-top:16px;max-width:340px;margin-left:auto;margin-right:auto">' +
+      '<p>录入一次四级模考或真题成绩，按官方分值结构折算 710 分制报道分，自动生成趋势图与针对性分析。</p>' +
+      '<div class="btn-row">' +
       '<button class="btn btn-ghost" data-act="demo">载入示例</button>' +
-      '<button class="btn btn-primary" data-act="tab" data-view="entry">开始录入</button>' +
+      '<button class="btn btn-primary" data-act="tab" data-view="entry">' + icon('plus') + '开始录入</button>' +
       '</div></div>';
   }
 
@@ -3398,16 +4249,42 @@ window.CET4_CONTENT = {
       : state.view === 'entry' ? viewEntry()
         : state.view === 'analysis' ? viewAnalysis()
           : viewRecords();
-    view.className = 'view' + (state.view === 'entry' ? ' has-preview' : '');
+    view.className = 'view view-' + state.view + (state.view === 'entry' ? ' has-preview' : '');
     view.innerHTML = html;
     renderTopbar();
     renderTabbar();
+    syncTopbarHeight();
+
+    /* 每次切页允许播放一次入场动画；同一次会话内不重复 */
+    animateNext = true;
 
     if (state.view === 'home') afterHome();
     if (state.view === 'entry') afterEntry();
     if (state.view === 'analysis') afterAnalysis();
     if (state.view === 'records') afterRecords();
+    animateNext = false;
     window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  /* 记录顶栏实际高度，供吸顶侧栏定位 */
+  function syncTopbarHeight() {
+    var tb = $('#topbar');
+    if (!tb) return;
+    document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+  }
+
+  /* Y 轴整数刻度：0 起，用「好读」的步长（50/100/150/200），末位不足则追加而不是改写 */
+  function scoreTicks(max) {
+    max = max || 710;
+    var candidates = [50, 100, 150, 200, 250];
+    var step = 200;
+    for (var i = 0; i < candidates.length; i++) {
+      if (max / candidates[i] <= 5) { step = candidates[i]; break; }
+    }
+    var out = [];
+    for (var v = 0; v <= max; v += step) out.push(v);
+    if (out[out.length - 1] < max) out.push(max);
+    return out;
   }
 
   function afterHome() {
@@ -3416,26 +4293,68 @@ window.CET4_CONTENT = {
     var latest = list[list.length - 1];
     var trends = M.trendStats(list);
 
-    mountChart($('#chartSections'), function (w) {
-      return CH.hbars({ width: w, rows: latest.sections.map(function (s) {
-        return { label: s.short, value: s.report, max: s.reportMax, color: sectionColor(s.key), sub: '得分率 ' + s.rate + '%' };
-      }), rowH: 30, labelW: 46, rightW: 52, unit: '' });
+    /* 仪表盘 */
+    mountChart($('#gaugeSlot'), function (w) {
+      var size = Math.min(176, Math.max(118, Math.round(w * 0.94)));
+      return CHart.gauge({
+        size: size, value: latest.total, max: 710,
+        bands: [
+          { from: 0, to: 220, color: 'var(--bad)' },
+          { from: 220, to: 425, color: 'var(--warn)' },
+          { from: 425, to: 550, color: 'var(--ok)' },
+          { from: 550, to: 710, color: 'var(--brand)' }
+        ],
+        marks: [{ value: 425, label: '425' }],
+        label: '估分', sub: '/ 710', aria: '估分仪表盘'
+      });
     });
 
+    /* 各部分得分 */
+    mountChart($('#chartSections'), function (w) {
+      return CHart.hbars({
+        width: w, rows: latest.sections.map(function (s) {
+          return { label: s.label, value: s.report, max: s.reportMax, color: sectionColor(s.key), sub: '得分率 ' + s.rate + '%' };
+        }), rowH: 32, labelW: 52, rightW: 54, unit: '分', aria: '各部分得分'
+      });
+    });
+
+    /* 得分贡献 */
+    mountChart($('#chartDonut'), function (w) {
+      var size = Math.min(150, Math.max(108, Math.round(w * 0.94)));
+      return CHart.donut({
+        size: size, thickness: Math.max(13, Math.round(size * 0.12)),
+        segments: latest.sections.map(function (s) {
+          return { value: s.report, color: sectionColor(s.key), label: s.label };
+        }),
+        centerTitle: fmtInt(latest.total), centerSub: '估分', gap: 2, aria: '得分贡献占比'
+      });
+    });
+    var legendEl = $('#donutLegend');
+    if (legendEl) {
+      legendEl.innerHTML = latest.sections.map(function (s) {
+        var pct = latest.total > 0 ? Math.round(s.report / latest.total * 100) : 0;
+        return '<div class="dl-row"><i style="background:' + sectionColor(s.key) + '"></i>' +
+          '<span class="dl-name">' + esc(s.short) + '</span>' +
+          '<b class="dl-val">' + fmt1(s.report) + '</b>' +
+          '<span class="dl-pct">' + pct + '%</span></div>';
+      }).join('');
+    }
+
+    /* 趋势 */
     mountChart($('#chartTrend'), function (w) {
       var marks = [{ value: 425, label: '425 基本目标', color: '#f59e0b' }];
       if (state.target !== 425) marks.push({ value: state.target, label: '目标 ' + state.target, color: '#ef4444' });
       if (state.chartMode === 'total') {
-        return CH.lineChart({
-          width: w, height: 210,
+        return CHart.line({
+          width: w, height: 206,
           labels: list.map(function (r) { return shortDate(r.date); }),
           series: [{ key: 'total', name: '总分', color: 'var(--brand)', values: list.map(function (r) { return r.total; }) }],
-          marks: marks,
-          yMin: 0, yMax: 710, unit: ' 分', aria: '总分趋势'
+          ticks: scoreTicks(710), yMin: 0, yMax: 710,
+          marks: marks, unit: ' 分', aria: '总分趋势'
         });
       }
-      return CH.lineChart({
-        width: w, height: 230,
+      return CHart.line({
+        width: w, height: 222,
         labels: list.map(function (r) { return shortDate(r.date); }),
         series: M.SECTIONS.map(function (s, i) {
           return {
@@ -3444,20 +4363,22 @@ window.CET4_CONTENT = {
             visible: state.seriesOn[s.key] !== false
           };
         }),
-        yMin: 0, yMax: 250, unit: ' 分', area: false, showLast: false, aria: '分项趋势'
+        ticks: [0, 50, 100, 150, 200, 250], yMin: 0, yMax: 250,
+        unit: ' 分', area: false, showLast: false, aria: '分项趋势'
       });
     });
 
+    /* 成绩构成 */
     mountChart($('#chartStack'), function (w) {
-      return CH.stackedBar({
-        width: w, height: 200,
+      return CHart.bar({
+        width: w, height: 204,
         items: list.slice(-6).map(function (r) {
           return {
             label: shortDate(r.date), total: r.total,
             parts: r.sections.map(function (s) { return { value: s.report, color: sectionColor(s.key), label: s.label }; })
           };
         }),
-        max: 710, aria: '成绩构成'
+        max: 710, ticks: scoreTicks(710), unit: '分', aria: '成绩构成'
       });
     });
 
@@ -3465,7 +4386,11 @@ window.CET4_CONTENT = {
   }
 
   function afterEntry() {
-    refreshPreview();
+    var root = $('#previewRoot');
+    if (root) root.innerHTML = previewHtml();
+    syncSteppers();
+    renderSideTip();
+    updateEntryOutputs();
   }
 
   function afterAnalysis() {
@@ -3476,15 +4401,16 @@ window.CET4_CONTENT = {
 
     mountChart($('#chartRate'), function (w) {
       var rows = an.rows.slice().sort(function (a, b) { return a.rate - b.rate; }).map(function (s) {
-        return { label: s.short, value: s.rate, max: 100, color: sectionColor(s.key), sub: '失分 ' + s.loss + ' 分 / 满分 ' + s.max };
+        return { label: s.label, value: s.rate, max: 100, color: sectionColor(s.key), sub: '失分 ' + s.loss + ' 分 / 满分 ' + s.max };
       });
-      return CH.hbars({ width: w, rows: rows, rowH: 32, labelW: 46, rightW: 44, unit: '%' });
+      return CHart.hbars({ width: w, rows: rows, rowH: 34, labelW: 52, rightW: 46, unit: '%', aria: '各部分得分率' });
     });
 
     if (!state.planKey) {
       state.planKey = state.weeks == null ? 'mid' : (state.weeks >= 10 ? 'long' : state.weeks >= 5 ? 'mid' : state.weeks >= 2 ? 'short' : 'sprint');
     }
-    $('#stageBody').innerHTML = stageHtml(state.planKey);
+    var stageBody = $('#stageBody');
+    if (stageBody) stageBody.innerHTML = stageHtml(state.planKey);
     CH.bindTooltips($('#view'));
   }
 
@@ -3492,15 +4418,15 @@ window.CET4_CONTENT = {
     var list = allResults();
     if (!list.length) return;
     mountChart($('#chartStackAll'), function (w) {
-      return CH.stackedBar({
-        width: w, height: 220,
+      return CHart.bar({
+        width: w, height: 214,
         items: list.slice(-8).map(function (r) {
           return {
             label: shortDate(r.date), total: r.total,
             parts: r.sections.map(function (s) { return { value: s.report, color: sectionColor(s.key), label: s.label }; })
           };
         }),
-        max: 710, aria: '成绩构成对比'
+        max: 710, ticks: scoreTicks(710), unit: '分', aria: '成绩构成对比'
       });
     });
     CH.bindTooltips($('#view'));
@@ -3509,13 +4435,26 @@ window.CET4_CONTENT = {
   /* ============================== 交互 ============================== */
 
   var toastTimer = null;
-  function toast(msg) {
+  function toast(msg, kind) {
     var t = $('#toast');
     if (!t) return;
-    t.textContent = msg;
+    var ico = kind === 'warn' ? '⚠' : kind === 'bad' ? '✕' : '✓';
+    t.innerHTML = '<span class="t-ico ' + (kind || 'ok') + '">' + ico + '</span><span>' + esc(msg) + '</span>';
     t.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1900);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2000);
+  }
+
+  /* 步进按钮到边界时禁用 */
+  function syncSteppers() {
+    $$('[data-act="step"]').forEach(function (b) {
+      var key = b.getAttribute('data-part');
+      var part = M.PART_MAP[key];
+      if (!part) return;
+      var cur = Number(state.draft.parts[key]) || 0;
+      var delta = Number(b.getAttribute('data-delta'));
+      b.disabled = delta > 0 ? cur >= part.count : cur <= 0;
+    });
   }
 
   var tooltipBoundOn = null;
@@ -3529,11 +4468,14 @@ window.CET4_CONTENT = {
   function setNum(partKey, value) {
     var part = M.PART_MAP[partKey];
     if (!part) return;
-    state.draft.parts[partKey] = M.clampInt(value, 0, part.count);
+    var next = M.clampInt(value, 0, part.count);
+    var changed = next !== (Number(state.draft.parts[partKey]) || 0);
+    state.draft.parts[partKey] = next;
     var input = $('[data-num="' + partKey + '"]');
-    if (input && String(input.value) !== String(state.draft.parts[partKey])) input.value = state.draft.parts[partKey];
+    if (input && String(input.value) !== String(next)) input.value = next;
+    syncSteppers();
     persist();
-    refreshPreview();
+    if (changed) refreshPreview();
   }
 
   function saveRecord() {

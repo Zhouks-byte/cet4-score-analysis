@@ -193,15 +193,27 @@ try {
     scrollW: document.documentElement.scrollWidth,
     clientW: document.documentElement.clientWidth,
     statCards: document.querySelectorAll('.stat').length,
-    ringTxt: document.querySelector('.ring-txt b')?.textContent
+    gauge: !!document.querySelector('#gaugeSlot svg'),
+    gaugeText: document.querySelector('#gaugeSlot svg text')?.textContent || '',
+    donut: !!document.querySelector('#chartDonut svg'),
+    donutSegs: document.querySelectorAll('#chartDonut .c-seg').length,
+    donutRows: document.querySelectorAll('#donutLegend .dl-row').length,
+    cols: document.querySelectorAll('.grid-2 .col').length
   }))()`);
   check('示例数据载入 4 条', home.records === 4, home.records);
   check('首页 3 张图表全部渲染', home.charts.length >= 3 && home.charts.every(c => c.svg), JSON.stringify(home.charts));
   check('图表有实际高度', home.charts.every(c => c.h > 80), JSON.stringify(home.charts.map(c => c.h)));
   check('顶栏显示估分与目标', /\d+ 分/.test(home.topbar), home.topbar);
   check('首页统计卡 4 个', home.statCards === 4, home.statCards);
-  check('环形图显示估分数字', /\d+/.test(home.ringTxt || ''), home.ringTxt);
+  check('仪表盘已渲染', home.gauge, home.gauge);
+  check('仪表盘显示估分数值', /\d+/.test(home.gaugeText || ''), home.gaugeText);
+  check('得分贡献环形已渲染且分 4 段', home.donut && home.donutSegs === 4, home.donutSegs);
+  check('环形图例 4 行', home.donutRows === 4, home.donutRows);
+  check('首页为双栏布局（2 列）', home.cols === 2, home.cols);
   check('首页无横向溢出', home.scrollW <= home.clientW + 1, `scrollW=${home.scrollW}`);
+  const tickTexts = await evaluate(`[...document.querySelectorAll('#chartTrend svg text[text-anchor="end"]')].map(t => t.textContent).filter(Boolean)`);
+  check('趋势 Y 轴刻度全部为整数', (tickTexts || []).length >= 4 && (tickTexts || []).every(t => /^\d+$/.test(t)), JSON.stringify(tickTexts));
+  check('趋势 Y 轴无 177.5 类非整刻度', !(tickTexts || []).some(t => t.indexOf('.') >= 0), JSON.stringify(tickTexts));
   report.shots.push(await shot('02-mobile-home'));
 
   /* 趋势切换 */
@@ -231,6 +243,11 @@ try {
   check('录入页 2 个自评滑杆', entry.ranges === 2, entry.ranges);
   check('实时预览条存在', entry.preview, entry.preview);
   check('录入页无横向溢出', entry.scrollW <= entry.clientW + 1, `scrollW=${entry.scrollW}`);
+  const stepState = await evaluate(`(() => ({
+    minusDisabled: document.querySelector('[data-act="step"][data-part="careful"][data-delta="-1"]')?.disabled,
+    plusDisabled: document.querySelector('[data-act="step"][data-part="news"][data-delta="1"]')?.disabled
+  }))()`);
+  check('步进器在 0 时减号禁用', stepState.minusDisabled === true, JSON.stringify(stepState));
   report.shots.push(await shot('03-mobile-entry'));
 
   /* 步进器联动 */
@@ -342,14 +359,28 @@ try {
   check('平板端无横向溢出', tablet.scrollW <= tablet.clientW + 1, `scrollW=${tablet.scrollW} clientW=${tablet.clientW}`);
   check('平板端图表 ≥3 张', tablet.svgs >= 3, tablet.svgs);
   check('平板端统计卡改为 4 列', tablet.statCols === 4, tablet.statCols);
+  const tabCols = await evaluate(`(() => {
+    const c = [...document.querySelectorAll('.grid-2 .col')].map(x => Math.round(x.getBoundingClientRect().left));
+    return { cols: c, sideBySide: c.length >= 2 && Math.abs(c[0] - c[1]) > 50 };
+  })()`);
+  check('平板端双栏并排', tabCols.sideBySide, JSON.stringify(tabCols.cols));
   report.shots.push(await shot('06-tablet-home'));
 
   /* 桌面 */
   await viewport(1180, 900, 1);
   await goto(PAGE_URL);
   await sleep(700);
-  const desk = await evaluate(`(() => ({ scrollW: document.documentElement.scrollWidth, clientW: document.documentElement.clientWidth }))()`);
+  const desk = await evaluate(`(() => {
+    const cols = [...document.querySelectorAll('.grid-2 .col')].map(c => Math.round(c.getBoundingClientRect().left));
+    return {
+      scrollW: document.documentElement.scrollWidth,
+      clientW: document.documentElement.clientWidth,
+      cols: cols,
+      sideBySide: cols.length >= 2 && Math.abs(cols[0] - cols[1]) > 50
+    };
+  })()`);
   check('桌面端无横向溢出', desk.scrollW <= desk.clientW + 1, `scrollW=${desk.scrollW}`);
+  check('桌面端双栏真正并排', desk.sideBySide, JSON.stringify(desk.cols));
   report.shots.push(await shot('07-desktop-home'));
 
   /* 深色 */

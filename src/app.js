@@ -18,6 +18,33 @@
   function fmtInt(n) { return Math.round(Number(n) || 0); }
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
+  /* ---------------- 图表 API 适配层 ----------------
+     charts.js 可能提供 v2 命名（line/bar/gauge/donut）或旧命名（lineChart/stackedBar/ring），
+     这里统一封装，两种版本都能工作。 */
+  var CHart = {
+    line: function (o) { return CH.line ? CH.line(o) : CH.lineChart(o); },
+    bar: function (o) { return CH.bar ? CH.bar(o) : CH.stackedBar(o); },
+    hbars: function (o) { return CH.hbars(o); },
+    donut: function (o) {
+      if (CH.donut) return CH.donut(o);
+      var total = o.segments.reduce(function (s, x) { return s + (Number(x.value) || 0); }, 0);
+      return CH.ring({
+        value: total, max: 710, size: o.size,
+        stroke: o.thickness || 16,
+        color: (o.segments[0] || {}).color || 'var(--brand)',
+        aria: o.aria
+      });
+    },
+    gauge: function (o) {
+      if (CH.gauge) return CH.gauge(o);
+      return CH.ring({
+        value: o.value, max: o.max, size: o.size,
+        stroke: Math.max(8, Math.round((o.size || 150) * 0.07)),
+        color: 'var(--brand)', color2: 'var(--brand-2)', aria: o.aria
+      });
+    }
+  };
+
   var ICON = {
     home: '<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5"/>',
     edit: '<path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 6.5l3 3"/>',
@@ -176,17 +203,21 @@
 
   var chartTasks = [];
 
+  /* 入场动画只在首次绘制时播放；resize 重绘时不再重播（否则拖动窗口会闪） */
+  var animateNext = true;
+
   function mountChart(el, draw) {
     if (!el) return;
     chartTasks.push({ el: el, draw: draw });
-    paintChart(el, draw);
+    paintChart(el, draw, animateNext);
   }
 
-  function paintChart(el, draw) {
+  function paintChart(el, draw, animate) {
     var w = Math.floor(el.clientWidth);
     if (!w) return;
     try {
       el.innerHTML = draw(w);
+      el.classList.toggle('no-anim', !animate);
     } catch (e) {
       el.innerHTML = '<div class="chart-empty">图表渲染失败</div>';
     }
@@ -198,7 +229,11 @@
     resizeRaf = requestAnimationFrame(function () {
       chartTasks.forEach(function (t) {
         if (!document.body.contains(t.el)) return;
-        paintChart(t.el, t.draw);
+        /* 宽度没变就不重绘，避免无谓的动画重播与抖动 */
+        var w = Math.floor(t.el.clientWidth);
+        if (t.lastW === w) return;
+        t.lastW = w;
+        paintChart(t.el, t.draw, false);
       });
     });
   }
@@ -210,7 +245,7 @@
     var trends = M.trendStats(list);
 
     if (!list.length) {
-      return '<div class="card">' + emptyState() + '</div>';
+      return '<section class="card">' + emptyState() + '</section>';
     }
 
     var latest = list[list.length - 1];
@@ -218,76 +253,90 @@
     var tp = A.targetProgress(latest, state.target);
     var delta = trends.delta;
     var deltaTone = delta > 0 ? 'up' : delta < 0 ? 'down' : 'flat';
-    var deltaTxt = trends.count > 1 ? (delta > 0 ? '↑' : delta < 0 ? '↓' : '→') + ' ' + Math.abs(delta) + ' 分' : '首次记录';
+    var deltaTxt = trends.count > 1
+      ? (delta > 0 ? '↑' : delta < 0 ? '↓' : '→') + ' ' + Math.abs(delta) + ' 分'
+      : '首次记录';
 
     var html = '';
 
-    /* --- 主卡片 --- */
-    html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('chart') + '最新估分</div>' +
-      '<span class="badge ghost">' + esc(fullDate(latest.date)) + '</span></div>' +
+    /* 主卡片：仪表盘 + 结论 + 指标 */
+    html += '<section class="card hero-card">' +
+      '<div class="card-head tight"><div class="card-title">' + icon('chart') + '最新估分</div>' +
+      '<span class="card-sub">' + esc(fullDate(latest.date)) + '</span></div>' +
       '<div class="hero">' +
-      '<div class="ring">' +
-      CH.ring({ value: latest.total, max: 710, size: 104, stroke: 9, color: 'var(--brand)', color2: 'var(--brand-2)', aria: '估分' }) +
-      '<div class="ring-txt"><b>' + fmtInt(latest.total) + '</b><span>/ 710</span></div>' +
-      '</div>' +
+      '<div class="gauge-slot" id="gaugeSlot"></div>' +
       '<div class="hero-main">' +
-      '<div class="tone-bar wrap" style="margin-bottom:6px"><span class="tone-chip">' + esc(band.label) + '</span>' +
+      '<div class="tone-bar wrap" style="margin-bottom:7px"><span class="tone-chip">' + esc(band.label) + '</span>' +
       '<span class="badge ' + (latest.passReached ? 'strong' : 'weak') + '">' + (latest.passReached ? '已达 425' : '未达 425') + '</span>' +
       (latest.zeroed ? '<span class="badge poor">≤220 记 0 分</span>' : '') + '</div>' +
-      '<div class="hero-title">' + esc(band.tagline || '') + '</div>' +
-      '<div class="hero-desc">常模百分位约 ' + latest.percentile + '% · 较上次 <span class="' + deltaTone + '" style="font-weight:700">' + esc(deltaTxt) + '</span></div>' +
-      '<div style="margin-top:9px"><div class="track"><i style="width:' + tp.pct + '%"></i></div>' +
-      '<div class="part-meta" style="display:flex;justify-content:space-between;margin-top:5px">' +
-      '<span>目标 ' + tp.target + ' 分</span><span>' + (tp.reached ? '已达成 +' + (Math.round(latest.total) - tp.target) : '还差 ' + tp.gap) + '</span></div></div>' +
+      '<div class="hero-title">' + esc(band.tagline || band.label) + '</div>' +
+      '<div class="hero-desc">常模百分位约 ' + latest.percentile + '% · 较上次 <b class="' + deltaTone + '">' + esc(deltaTxt) + '</b></div>' +
+      '<div style="margin-top:10px"><div class="track"><i style="width:' + tp.pct + '%"></i></div>' +
+      '<div class="gauge-meta"><span>目标 ' + tp.target + ' 分</span>' +
+      '<span class="' + (tp.reached ? 'up' : 'flat') + '" style="font-weight:700">' +
+      (tp.reached ? '已达成 +' + (Math.round(latest.total) - tp.target) : '还差 ' + tp.gap + ' 分') + '</span></div></div>' +
       '</div></div>' +
-      '<div class="stat-grid" style="margin-top:14px">' +
-      statCell('考试次数', String(trends.count), '共录入 ' + trends.count + ' 次', 'flat') +
-      statCell('历史最高', String(fmtInt(trends.best.total)), esc(shortDate(trends.best.date)) + ' 取得', 'up') +
-      statCell('平均分', String(Math.round(trends.avg)), '波动 ' + trends.volatility + ' 分', 'flat') +
-      statCell('趋势斜率', (trends.slope > 0 ? '+' : '') + trends.slope, trends.improving ? '稳步提升' : trends.slope < -2 ? '有所回落' : '基本持平', trends.slope > 0 ? 'up' : trends.slope < 0 ? 'down' : 'flat') +
+      '<div class="stat-grid" style="margin-top:15px">' +
+      statCell('考试次数', String(trends.count), '已录入 ' + trends.count + ' 次', 'flat') +
+      statCell('历史最高', String(fmtInt(trends.best.total)), '于 ' + esc(shortDate(trends.best.date)), 'up') +
+      statCell('平均分', String(Math.round(trends.avg)), '波动 ±' + trends.volatility, 'flat') +
+      statCell('趋势斜率', (trends.slope > 0 ? '+' : '') + trends.slope,
+        trends.improving ? '稳步提升' : trends.slope < -2 ? '有所回落' : '基本持平',
+        trends.slope > 0 ? 'up' : trends.slope < 0 ? 'down' : 'flat') +
       '</div></section>';
 
-    /* --- 板块得分 --- */
-    var secRows = latest.sections.map(function (s) {
-      return { label: s.label, value: s.report, max: s.reportMax, color: sectionColor(s.key), sub: '得分率 ' + s.rate + '%' };
-    });
+    /* 双栏 */
+    html += '<div class="grid-2"><div class="col">';
+
+    /* 趋势 */
+    html += '<section class="card">' +
+      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩趋势</div>' +
+      '<span class="card-sub">' + trends.count + ' 次记录</span></div>' +
+      segHtml([{ key: 'total', label: '总分' }, { key: 'parts', label: '分项' }], state.chartMode, 'chart-mode') +
+      '<div class="chart-wrap" id="chartTrend" style="margin-top:10px"></div>' +
+      (state.chartMode === 'parts' ? legendHtml() : '') +
+      '</section>';
+
+    /* 成绩构成 */
+    html += '<section class="card">' +
+      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩构成</div>' +
+      '<span class="card-sub">最近 ' + Math.min(6, list.length) + ' 次</span></div>' +
+      '<div class="chart-wrap" id="chartStack"></div>' +
+      '<div class="legend">' + latestSectionsLegend() + '</div>' +
+      '</section>';
+
+    html += '</div><div class="col">';
+
+    /* 各部分得分 */
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('spark') + '各部分得分</div>' +
       '<span class="card-sub">满分 710</span></div>' +
       '<div class="chart-wrap" id="chartSections"></div>' +
       '</section>';
 
-    /* --- 趋势 --- */
+    /* 得分贡献 */
     html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩趋势</div>' +
-      '<span class="card-sub">' + trends.count + ' 次记录</span></div>' +
-      segHtml([{ key: 'total', label: '总分' }, { key: 'parts', label: '分项' }], state.chartMode, 'chart-mode') +
-      '<div class="chart-wrap" id="chartTrend" style="margin-top:12px"></div>' +
-      (state.chartMode === 'parts' ? legendHtml() : '') +
-      '</section>';
+      '<div class="card-head"><div class="card-title">' + icon('target') + '得分贡献</div>' +
+      '<span class="card-sub">共 ' + fmt1(latest.total) + ' 分</span></div>' +
+      '<div class="donut-row">' +
+      '<div class="chart-wrap donut-wrap" id="chartDonut"></div>' +
+      '<div class="donut-legend" id="donutLegend"></div>' +
+      '</div></section>';
 
-    /* --- 结构堆叠 --- */
-    html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('chart') + '成绩构成</div>' +
-      '<span class="card-sub">最近 ' + Math.min(6, list.length) + ' 次</span></div>' +
-      '<div class="chart-wrap" id="chartStack"></div>' +
-      '<div class="legend">' + stackLegend() + '</div>' +
-      '</section>';
-
-    /* --- 最近记录 --- */
+    /* 最近记录 */
     html += '<section class="card flush">' +
       '<div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '最近记录</div>' +
       '<button class="btn sm btn-ghost" data-act="tab" data-view="records">全部</button></div>' +
       list.slice(-3).reverse().map(recordRow).join('') +
       '</section>';
 
-    /* --- 赋分依据 --- */
+    html += '</div></div>';
+
+    /* 赋分依据 */
     html += formulaCard(latest);
 
     return html;
   }
-
   /* 赋分依据卡片：把「原始分 → 侧重与折算 → 报道分」讲清楚 */
   function formulaCard(latest) {
     var rowsHtml = M.SECTIONS.map(function (sec) {
@@ -355,10 +404,12 @@
     var d = state.draft;
     var html = '';
 
+    html += '<div class="entry-layout"><div class="col entry-main">';
+
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('edit') + '录入本次成绩</div>' +
       '<span class="badge ghost">第 ' + (state.records.length + 1) + ' 次</span></div>' +
-      '<div class="note" style="margin-bottom:12px">选择录入方式：按<b>答对题数</b>录入最省事，系统按官方每题分值自动折算；已知报道分时可切换为按<b>报道分</b>直接录入。</div>' +
+      '<div class="note" style="margin-bottom:11px">按<b>答对题数</b>录入最省事，系统按官方每题分值自动折算；已知报道分可切换为按<b>报道分</b>录入。</div>' +
       segHtml([
         { key: 'items', label: '按答对题数' },
         { key: 'report', label: '按报道分' }
@@ -369,10 +420,10 @@
     M.SECTIONS.forEach(function (sec) {
       if (sec.kind !== 'objective') return;
       html += '<section class="card tone-' + sec.key + '">' +
-        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span>' +
-        '<span class="card-sub">' + sec.parts.reduce(function (s, p) { return s + p.count; }, 0) + ' 题 · ' +
-        sec.ratio + '% 分值 · ' + sec.reportMax + ' 分</span></div>' +
-        '<span class="badge ghost" data-sec-out="' + sec.key + '">0 分</span></div>';
+        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span></div>' +
+        '<span class="badge ghost" data-sec-out="' + sec.key + '">0 分</span></div>' +
+        '<div class="sec-meta">' + sec.parts.reduce(function (s, p) { return s + p.count; }, 0) + ' 题 · ' +
+        sec.ratio + '% 分值 · 满分 ' + sec.reportMax + ' 分</div>';
 
       sec.parts.forEach(function (part) {
         html += partRow(part, d);
@@ -387,11 +438,10 @@
       var tier = M.tierOf(val);
       var cTier = ((C.tiers || {})[sec.tierType] || []).filter(function (t) { return t.key === tier.key; })[0];
       html += '<section class="card tone-' + key + '">' +
-        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span>' +
-        '<span class="card-sub">15 分制 · ' + sec.ratio + '% 分值 · ' + sec.reportMax + ' 分</span></div>' +
+        '<div class="card-head"><div class="card-title"><span class="tone-chip">' + esc(sec.label) + '</span></div>' +
         '<span class="badge ' + (val >= 10 ? 'strong' : val >= 7 ? 'ok' : 'weak') + '" data-tier-out="' + key + '">' + esc(tier.label) + '</span></div>' +
         '<div class="part-top" style="align-items:center">' +
-        '<div class="part-meta">按 15 分制自评（官方五档总体印象评分）</div>' +
+        '<div class="part-meta">15 分制自评 · ' + sec.ratio + '% 分值 · 满分 ' + sec.reportMax + ' 分</div>' +
         '<div class="part-score"><b data-sub-out="' + key + '">' + val + '</b><span> / 15 · ≈ ' + fmt1(val * M.POINT) + ' 分</span></div>' +
         '</div>' +
         '<input class="range" type="range" min="0" max="15" step="1" value="' + val + '" data-range="' + key + '" ' +
@@ -401,7 +451,7 @@
           return '<button type="button" class="chip" data-act="sub-preset" data-key="' + key + '" data-val="' + v + '" aria-pressed="' + (val === v) + '">' + v + ' 分<small>' + M.tierOf(v).label + '</small></button>';
         }).join('') +
         '</div>' +
-        '<div class="note" style="margin-top:10px" data-tier-desc="' + key + '">' + esc(cTier ? cTier.desc : '') + '</div>' +
+        '<div class="note" style="margin-top:9px" data-tier-desc="' + key + '">' + esc(cTier ? cTier.desc : '') + '</div>' +
         '<details class="acc"><summary>查看五档评分标准' + icon('chevron', 'caret') + '</summary>' +
         '<div class="acc-body"><table class="tbl"><tbody>' +
         ((C.tiers || {})[sec.tierType] || []).map(function (t) {
@@ -413,12 +463,12 @@
 
     /* 元信息 */
     html += '<section class="card">' +
-      '<div class="card-head"><div class="card-title">' + icon('clock') + '录入时间与备注</div></div>' +
+      '<div class="card-head"><div class="card-title">' + icon('clock') + '时间与备注</div></div>' +
       '<div class="form-grid two">' +
       '<div class="field"><label for="inDate">考试 / 模考时间</label>' +
       '<input class="input" id="inDate" type="datetime-local" value="' + esc(d.date) + '" data-field="date"></div>' +
       '<div class="field"><label for="inNote">备注（可选）</label>' +
-      '<input class="input" id="inNote" type="text" maxlength="30" placeholder="如：真题第 3 套、某机构模考" value="' + esc(d.note || '') + '" data-field="note"></div>' +
+      '<input class="input" id="inNote" type="text" maxlength="30" placeholder="如：真题第 3 套" value="' + esc(d.note || '') + '" data-field="note"></div>' +
       '</div></section>';
 
     html += '<div class="btn-row">' +
@@ -426,10 +476,15 @@
       '<button class="btn btn-primary" data-act="save">' + icon('check') + '保存并分析</button>' +
       '</div>';
 
-    html += '<div id="previewRoot"></div>';
+    html += '</div>';
+
+    /* 右栏：实时预览（宽屏吸顶侧栏，手机端浮动底部） */
+    html += '<div class="entry-side"><div id="previewRoot"></div>' +
+      '<div class="side-tip card pad-sm" id="sideTip"></div></div>';
+
+    html += '</div>';
     return html;
   }
-
   function partRow(part, d) {
     var val = Number(d.parts[part.key]) || 0;
     var report = fmt1(val * part.perItem);
@@ -463,21 +518,73 @@
     return '<div class="preview" id="preview">' +
       '<div class="preview-top">' +
       '<div><div class="pv-label">实时估分</div>' +
-      '<div class="pv-score"><b>' + fmtInt(r.total) + '</b><span>/ 710</span></div>' +
-      '<div class="pv-label" style="margin-top:3px;opacity:.75">原始分合计 ' + fmt1(r.rawTotal) + ' / 100</div></div>' +
+      '<div class="pv-score"><b data-pv-score>' + fmtInt(r.total) + '</b><span>/ 710</span></div>' +
+      '<div class="pv-label" style="margin-top:2px;opacity:.72">原始分 ' + fmt1(r.rawTotal) + ' / 100</div></div>' +
       '<div class="pv-right"><div class="pv-badge">' + esc(band.label) + '</div>' +
-      '<div class="pv-label" style="margin-top:5px">' + (tp.reached ? '已超目标 ' + (Math.round(r.total) - tp.target) + ' 分' : '距 ' + tp.target + ' 还差 ' + tp.gap + ' 分') + '</div></div>' +
+      '<div class="pv-label" style="margin-top:5px">' +
+      (tp.reached ? '超目标 ' + (Math.round(r.total) - tp.target) + ' 分' : '距 ' + tp.target + ' 差 ' + tp.gap) + '</div></div>' +
       '</div>' +
       '<div class="pv-bars">' + bars + '</div>' +
-      (r.zeroed ? '<div class="pv-label" style="margin-top:9px;opacity:.9">⚠ 总分 ≤ 220 分时官方记为 0 分</div>' : '') +
+      (r.zeroed ? '<div class="pv-label" style="margin-top:8px;opacity:.92">⚠ 总分 ≤ 220 分官方记 0 分</div>' : '') +
       '</div>';
   }
 
-  function refreshPreview() {
+  /* 局部更新预览：避免整块重建造成闪烁 */
+  function patchPreview() {
     var root = $('#previewRoot');
     if (!root) return;
-    root.innerHTML = previewHtml();
+    var pv = root.querySelector('#preview');
+    if (!pv) { root.innerHTML = previewHtml(); updateEntryOutputs(); renderSideTip(); return; }
+
+    var r = draftResult();
+    var band = A.bandContent(r.bandKey);
+    var tp = A.targetProgress(r, state.target);
+
+    var scoreEl = pv.querySelector('[data-pv-score]');
+    if (scoreEl) {
+      var next = String(fmtInt(r.total));
+      if (scoreEl.textContent !== next) {
+        scoreEl.textContent = next;
+        scoreEl.classList.remove('bump');
+        void scoreEl.offsetWidth;
+        scoreEl.classList.add('bump');
+      }
+    }
+    var badge = pv.querySelector('.pv-badge');
+    if (badge) badge.textContent = band.label;
+    var right = pv.querySelector('.pv-right .pv-label');
+    if (right) {
+      right.textContent = tp.reached
+        ? '超目标 ' + (Math.round(r.total) - tp.target) + ' 分'
+        : '距 ' + tp.target + ' 差 ' + tp.gap;
+    }
+    var bars = pv.querySelectorAll('.pv-bar');
+    r.sections.forEach(function (s, i) {
+      var bar = bars[i];
+      if (!bar) return;
+      var val = bar.querySelector('.lbl b');
+      if (val) val.textContent = fmt1(s.report);
+      var fill = bar.querySelector('.t > i');
+      if (fill) fill.style.width = fmt1(s.rate) + '%';
+    });
     updateEntryOutputs();
+    renderSideTip();
+  }
+
+  function renderSideTip() {
+    var tip = $('#sideTip');
+    if (!tip) return;
+    var r = draftResult();
+    var an = A.analyze(r, { target: state.target, weeks: state.weeks });
+    var items = an.diagnoses.slice(0, 3).map(function (d) {
+      return '<li>' + esc(d.title) + '</li>';
+    }).join('');
+    tip.innerHTML = '<div class="card-head tight"><div class="card-title">' + icon('spark') + '即时提示</div></div>' +
+      '<ul class="advice">' + items + '</ul>';
+  }
+
+  function refreshPreview() {
+    patchPreview();
   }
 
   function updateEntryOutputs() {
@@ -519,37 +626,47 @@
 
   function viewAnalysis() {
     var list = allResults();
-    if (!list.length) return '<div class="card">' + emptyState() + '</div>';
+    if (!list.length) return '<section class="card">' + emptyState() + '</section>';
     var latest = list[list.length - 1];
     var trends = M.trendStats(list);
     var an = A.analyze(latest, { target: state.target, trends: trends, weeks: state.weeks });
     var html = '';
 
-    /* --- 结论 --- */
+    /* 结论 */
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('spark') + '综合诊断</div>' +
-      '<button class="btn sm btn-ghost" data-act="copy-report">复制报告</button></div>' +
+      '<button class="btn sm btn-ghost" data-act="copy-report">' + icon('download') + '复制报告</button></div>' +
       '<div class="hero">' +
       '<div class="ring">' + CH.ring({ value: latest.total, max: 710, size: 96, stroke: 8, color: 'var(--brand)', color2: 'var(--brand-2)' }) +
       '<div class="ring-txt"><b>' + fmtInt(latest.total) + '</b><span>/ 710</span></div></div>' +
       '<div class="hero-main"><div class="hero-title">' + esc(an.band.tagline || an.band.label) + '</div>' +
-      '<div class="hero-desc" style="margin-top:6px">' + esc(an.summary) + '</div></div>' +
+      '<div class="hero-desc" style="margin-top:5px">' + esc(an.summary) + '</div></div>' +
       '</div>' +
-      '<div class="note" style="margin-top:12px">' + esc(an.band.desc || '') + '</div>' +
+      '<div class="note" style="margin-top:11px">' + esc(an.band.desc || '') + '</div>' +
       '</section>';
 
-    /* --- 诊断条目 --- */
+    html += '<div class="grid-2"><div class="col">';
+
+    /* 关键发现 */
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('target') + '关键发现</div>' +
       '<span class="card-sub">' + an.diagnoses.length + ' 条</span></div>' +
       '<div class="diag">' + an.diagnoses.map(function (d) {
-        return '<div class="diag-item"><span class="di">' + d.icon + '</span><div><b>' + esc(d.title) + '</b><br>' + esc(d.text) + '</div></div>';
+        return '<div class="diag-item ' + (d.level || '') + '"><span class="di">' + d.icon + '</span>' +
+          '<div><b>' + esc(d.title) + '</b><br>' + esc(d.text) + '</div></div>';
       }).join('') + '</div></section>';
 
-    /* --- 目标与提分路径 --- */
+    /* 得分率 */
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('chart') + '各部分得分率</div>' +
+      '<span class="card-sub">越低越该补</span></div><div class="chart-wrap" id="chartRate"></div>' +
+      '<div class="note" style="margin-top:7px">得分率 = 该部分报道分 ÷ 该部分满分。</div></section>';
+
+    html += '</div><div class="col">';
+
+    /* 提分路径 */
     html += '<section class="card">' +
       '<div class="card-head"><div class="card-title">' + icon('arrow') + '提分路径</div>' +
       '<span class="card-sub">目标 ' + state.target + ' 分</span></div>' +
-      '<div class="chips" style="margin-bottom:12px">' +
+      '<div class="chips" style="margin-bottom:11px">' +
       [425, 450, 500, 550, 600].map(function (t) {
         return '<button class="chip" data-act="target" data-target="' + t + '" aria-pressed="' + (t === state.target) + '">' + t + ' 分</button>';
       }).join('') + '</div>' +
@@ -559,24 +676,28 @@
             '<div class="plan-main"><div class="plan-title">' + esc(s.title) + '</div><div class="plan-sub">' + esc(s.sub) + '</div></div>' +
             '<div class="plan-gain">' + esc(s.gain) + '</div></div>';
         }).join('') + '</div>' +
-        '<div class="note" style="margin-top:10px">' + esc(an.plan.message) + '</div>'
+        '<div class="note" style="margin-top:9px">' + esc(an.plan.message) + '</div>'
         : '<div class="note">当前估分已超过 ' + state.target + ' 分目标，可把目标上调一档继续冲击。</div>') +
       '</section>';
 
-    /* --- 各部分得分率 --- */
-    var rows = an.rows.slice().sort(function (a, b) { return a.rate - b.rate; }).map(function (s) {
-      return { label: s.label + ' ' + s.report, value: s.rate, max: 100, color: sectionColor(s.key), sub: '失分 ' + s.loss + ' 分 / 满分 ' + s.max };
-    });
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('chart') + '各部分得分率</div>' +
-      '<span class="card-sub">单位 %</span></div><div class="chart-wrap" id="chartRate"></div>' +
-      '<div class="note" style="margin-top:6px">得分率 = 该部分报道分 ÷ 该部分满分。越低的分项越值得优先投入。</div></section>';
+    /* 学习计划 */
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('clock') + '学习计划</div>' +
+      '<span class="card-sub">按距考试时间</span></div>' +
+      '<div class="chips">' +
+      [['long', '10 周以上'], ['mid', '5~9 周'], ['short', '2~4 周'], ['sprint', '考前周']].map(function (x) {
+        return '<button class="chip" data-act="stage" data-stage="' + x[0] + '" aria-pressed="' + (state.planKey === x[0]) + '">' + esc(x[1]) + '</button>';
+      }).join('') + '</div>' +
+      '<div id="stageBody" style="margin-top:11px"></div>' +
+      '</section>';
 
-    /* --- 题型明细 --- */
+    html += '</div></div>';
+
+    /* 题型明细 */
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('list') + '题型明细</div>' +
       '<span class="card-sub">共 57 题 / 100%</span></div>';
     M.SECTIONS.forEach(function (sec) {
       if (sec.kind !== 'objective') return;
-      html += '<div class="sec-title" style="margin-top:6px"><span class="tone-chip" style="--tone:' + sectionColor(sec.key) + '">' + esc(sec.label) + '</span></div>';
+      html += '<div class="sec-title"><span class="tone-chip" style="--tone:' + sectionColor(sec.key) + '">' + esc(sec.label) + '</span></div>';
       sec.parts.forEach(function (part) {
         var p = an.parts.filter(function (x) { return x.key === part.key; })[0];
         var typeC = (((C.sections || {})[sec.key] || {}).types || {})[part.key] || {};
@@ -587,7 +708,7 @@
           '</div>' +
           '<div class="part-meta">答对 ' + p.correct + '/' + p.count + '（' + p.accuracy + '%）· 每题 ' + fmt1(p.perItem) + ' 分 · 失分 ' + fmt1(p.loss) + '</div>' +
           '<div class="track thin" style="--tone:' + sectionColor(sec.key) + '"><i style="width:' + p.accuracy + '%"></i></div>' +
-          (typeC.focus ? '<div class="note" style="margin-top:8px">' + esc(typeC.focus) + '</div>' : '') +
+          (typeC.focus ? '<div class="note" style="margin-top:7px">' + esc(typeC.focus) + '</div>' : '') +
           '<details class="acc"><summary>这个题型怎么提' + icon('chevron', 'caret') + '</summary><div class="acc-body">' +
           '<ul class="advice">' +
           (p.accuracy < 72 ? (typeC.weak || []) : (typeC.strong || [])).concat(typeC.tips || []).map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') +
@@ -606,19 +727,9 @@
     });
     html += '</section>';
 
-    /* --- 学习计划 --- */
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('clock') + '学习计划</div>' +
-      '<span class="card-sub">距考试可选</span></div>' +
-      '<div class="chips">' +
-      [['long', '10 周以上'], ['mid', '5~9 周'], ['short', '2~4 周'], ['sprint', '考前周']].map(function (x) {
-        var active = state.planKey === x[0];
-        return '<button class="chip" data-act="stage" data-stage="' + x[0] + '" aria-pressed="' + active + '">' + esc(x[1]) + '</button>';
-      }).join('') + '</div>' +
-      '<div id="stageBody" style="margin-top:12px"></div>' +
-      '</section>';
-
-    /* --- 建议动作 --- */
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('check') + '现在就该做的事</div></div>' +
+    /* 建议动作 */
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('check') + '现在就该做的事</div>' +
+      '<span class="card-sub">按优先级排序</span></div>' +
       '<ul class="advice">' + an.actions.map(function (a) { return '<li>' + esc(a) + '</li>'; }).join('') + '</ul>' +
       '</section>';
 
@@ -641,29 +752,40 @@
   function viewRecords() {
     var list = allResults();
     if (!list.length) {
-      return '<div class="card">' + emptyState() + '</div>';
+      return '<section class="card">' + emptyState() + '</section>';
     }
     var trends = M.trendStats(list);
     var html = '';
 
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('list') + '全部记录</div>' +
       '<span class="card-sub">' + list.length + ' 次 · 平均 ' + Math.round(trends.avg) + ' 分</span></div>' +
-      '<div style="overflow-x:auto;-webkit-overflow-scrolling:touch">' +
-      '<table class="tbl" style="min-width:330px"><thead><tr>' +
+      '<div class="stat-grid" style="margin-bottom:14px">' +
+      statCell('记录数', String(trends.count), '含示例与正式', 'flat') +
+      statCell('最高分', String(fmtInt(trends.best.total)), '于 ' + esc(shortDate(trends.best.date)), 'up') +
+      statCell('最低分', String(fmtInt(trends.worst.total)), '于 ' + esc(shortDate(trends.worst.date)), 'down') +
+      statCell('波动', '±' + trends.volatility, trends.stable ? '较稳定' : '波动偏大', trends.stable ? 'flat' : 'down') +
+      '</div>' +
+      '<div class="tbl-scroll">' +
+      '<table class="tbl" style="min-width:340px"><thead><tr>' +
       '<th>录入时间</th><th>听力</th><th>阅读</th><th>写作</th><th>翻译</th><th>总分</th></tr></thead><tbody>' +
       list.slice().reverse().map(function (r) {
-        return '<tr><td style="white-space:nowrap">' + esc(fullDate(r.date)) + (r.note ? '<br><span style="color:var(--muted);font-size:11px">' + esc(r.note) + '</span>' : '') + '</td>' +
+        return '<tr><td style="white-space:nowrap">' + esc(fullDate(r.date)) +
+          (r.note ? '<br><span class="muted" style="font-size:10.5px">' + esc(r.note) + '</span>' : '') + '</td>' +
           '<td>' + fmt1(r.sections[1].report) + '</td><td>' + fmt1(r.sections[2].report) + '</td>' +
           '<td>' + fmt1(r.sections[0].report) + '</td><td>' + fmt1(r.sections[3].report) + '</td>' +
           '<td class="acc">' + fmtInt(r.total) + '</td></tr>';
       }).join('') +
       '</tbody></table></div></section>';
 
+    html += '<div class="grid-2"><div class="col">';
+
     html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('chart') + '成绩构成对比</div>' +
       '<span class="card-sub">最近 ' + Math.min(8, list.length) + ' 次</span></div>' +
       '<div class="chart-wrap" id="chartStackAll"></div><div class="legend">' + latestSectionsLegend() + '</div></section>';
 
-    html += '<section class="card flush"><div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '管理</div></div>' +
+    html += '</div><div class="col">';
+
+    html += '<section class="card flush"><div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '管理记录</div></div>' +
       list.slice().reverse().map(function (r) {
         return '<div class="rec">' +
           '<div class="rec-dot" style="background:' + (r.passReached ? 'var(--ok)' : 'var(--bad)') + '"></div>' +
@@ -675,13 +797,16 @@
       }).join('') +
       '</section>';
 
-    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('download') + '数据备份</div></div>' +
-      '<div class="note" style="margin-bottom:12px">记录保存在本机浏览器（localStorage），不上传服务器。换设备或清理浏览器前请先导出备份。</div>' +
-      '<div class="btn-row" style="margin-bottom:10px">' +
+    html += '</div></div>';
+
+    html += '<section class="card"><div class="card-head"><div class="card-title">' + icon('download') + '数据备份</div>' +
+      '<span class="card-sub">仅存本机</span></div>' +
+      '<div class="note" style="margin-bottom:11px">记录保存在本机浏览器（localStorage），不上传服务器。换设备或清理浏览器前请先导出备份。</div>' +
+      '<div class="btn-row" style="margin-bottom:9px">' +
       '<button class="btn btn-ghost" data-act="export">' + icon('download') + '导出 JSON</button>' +
       '<button class="btn btn-ghost" data-act="choose-import">' + icon('upload') + '导入备份</button></div>' +
       '<input type="file" id="fileImport" accept="application/json,.json" hidden>' +
-      '<button class="btn btn-ghost btn-block" data-act="wipe" style="color:var(--bad)">清空全部记录</button>' +
+      '<button class="btn btn-ghost btn-block danger" data-act="wipe">' + icon('trash') + '清空全部记录</button>' +
       '</section>';
 
     return html;
@@ -693,10 +818,10 @@
     return '<div class="empty">' +
       '<div class="em-ico">' + icon('chart') + '</div>' +
       '<h3>还没有成绩记录</h3>' +
-      '<p>录入一次四级模考或真题成绩，系统会按官方分值结构折算 710 分制报道分，并生成趋势图与针对性分析。</p>' +
-      '<div class="btn-row" style="margin-top:16px;max-width:340px;margin-left:auto;margin-right:auto">' +
+      '<p>录入一次四级模考或真题成绩，按官方分值结构折算 710 分制报道分，自动生成趋势图与针对性分析。</p>' +
+      '<div class="btn-row">' +
       '<button class="btn btn-ghost" data-act="demo">载入示例</button>' +
-      '<button class="btn btn-primary" data-act="tab" data-view="entry">开始录入</button>' +
+      '<button class="btn btn-primary" data-act="tab" data-view="entry">' + icon('plus') + '开始录入</button>' +
       '</div></div>';
   }
 
@@ -729,16 +854,42 @@
       : state.view === 'entry' ? viewEntry()
         : state.view === 'analysis' ? viewAnalysis()
           : viewRecords();
-    view.className = 'view' + (state.view === 'entry' ? ' has-preview' : '');
+    view.className = 'view view-' + state.view + (state.view === 'entry' ? ' has-preview' : '');
     view.innerHTML = html;
     renderTopbar();
     renderTabbar();
+    syncTopbarHeight();
+
+    /* 每次切页允许播放一次入场动画；同一次会话内不重复 */
+    animateNext = true;
 
     if (state.view === 'home') afterHome();
     if (state.view === 'entry') afterEntry();
     if (state.view === 'analysis') afterAnalysis();
     if (state.view === 'records') afterRecords();
+    animateNext = false;
     window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  /* 记录顶栏实际高度，供吸顶侧栏定位 */
+  function syncTopbarHeight() {
+    var tb = $('#topbar');
+    if (!tb) return;
+    document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+  }
+
+  /* Y 轴整数刻度：0 起，用「好读」的步长（50/100/150/200），末位不足则追加而不是改写 */
+  function scoreTicks(max) {
+    max = max || 710;
+    var candidates = [50, 100, 150, 200, 250];
+    var step = 200;
+    for (var i = 0; i < candidates.length; i++) {
+      if (max / candidates[i] <= 5) { step = candidates[i]; break; }
+    }
+    var out = [];
+    for (var v = 0; v <= max; v += step) out.push(v);
+    if (out[out.length - 1] < max) out.push(max);
+    return out;
   }
 
   function afterHome() {
@@ -747,26 +898,68 @@
     var latest = list[list.length - 1];
     var trends = M.trendStats(list);
 
-    mountChart($('#chartSections'), function (w) {
-      return CH.hbars({ width: w, rows: latest.sections.map(function (s) {
-        return { label: s.short, value: s.report, max: s.reportMax, color: sectionColor(s.key), sub: '得分率 ' + s.rate + '%' };
-      }), rowH: 30, labelW: 46, rightW: 52, unit: '' });
+    /* 仪表盘 */
+    mountChart($('#gaugeSlot'), function (w) {
+      var size = Math.min(176, Math.max(118, Math.round(w * 0.94)));
+      return CHart.gauge({
+        size: size, value: latest.total, max: 710,
+        bands: [
+          { from: 0, to: 220, color: 'var(--bad)' },
+          { from: 220, to: 425, color: 'var(--warn)' },
+          { from: 425, to: 550, color: 'var(--ok)' },
+          { from: 550, to: 710, color: 'var(--brand)' }
+        ],
+        marks: [{ value: 425, label: '425' }],
+        label: '估分', sub: '/ 710', aria: '估分仪表盘'
+      });
     });
 
+    /* 各部分得分 */
+    mountChart($('#chartSections'), function (w) {
+      return CHart.hbars({
+        width: w, rows: latest.sections.map(function (s) {
+          return { label: s.label, value: s.report, max: s.reportMax, color: sectionColor(s.key), sub: '得分率 ' + s.rate + '%' };
+        }), rowH: 32, labelW: 52, rightW: 54, unit: '分', aria: '各部分得分'
+      });
+    });
+
+    /* 得分贡献 */
+    mountChart($('#chartDonut'), function (w) {
+      var size = Math.min(150, Math.max(108, Math.round(w * 0.94)));
+      return CHart.donut({
+        size: size, thickness: Math.max(13, Math.round(size * 0.12)),
+        segments: latest.sections.map(function (s) {
+          return { value: s.report, color: sectionColor(s.key), label: s.label };
+        }),
+        centerTitle: fmtInt(latest.total), centerSub: '估分', gap: 2, aria: '得分贡献占比'
+      });
+    });
+    var legendEl = $('#donutLegend');
+    if (legendEl) {
+      legendEl.innerHTML = latest.sections.map(function (s) {
+        var pct = latest.total > 0 ? Math.round(s.report / latest.total * 100) : 0;
+        return '<div class="dl-row"><i style="background:' + sectionColor(s.key) + '"></i>' +
+          '<span class="dl-name">' + esc(s.short) + '</span>' +
+          '<b class="dl-val">' + fmt1(s.report) + '</b>' +
+          '<span class="dl-pct">' + pct + '%</span></div>';
+      }).join('');
+    }
+
+    /* 趋势 */
     mountChart($('#chartTrend'), function (w) {
       var marks = [{ value: 425, label: '425 基本目标', color: '#f59e0b' }];
       if (state.target !== 425) marks.push({ value: state.target, label: '目标 ' + state.target, color: '#ef4444' });
       if (state.chartMode === 'total') {
-        return CH.lineChart({
-          width: w, height: 210,
+        return CHart.line({
+          width: w, height: 206,
           labels: list.map(function (r) { return shortDate(r.date); }),
           series: [{ key: 'total', name: '总分', color: 'var(--brand)', values: list.map(function (r) { return r.total; }) }],
-          marks: marks,
-          yMin: 0, yMax: 710, unit: ' 分', aria: '总分趋势'
+          ticks: scoreTicks(710), yMin: 0, yMax: 710,
+          marks: marks, unit: ' 分', aria: '总分趋势'
         });
       }
-      return CH.lineChart({
-        width: w, height: 230,
+      return CHart.line({
+        width: w, height: 222,
         labels: list.map(function (r) { return shortDate(r.date); }),
         series: M.SECTIONS.map(function (s, i) {
           return {
@@ -775,20 +968,22 @@
             visible: state.seriesOn[s.key] !== false
           };
         }),
-        yMin: 0, yMax: 250, unit: ' 分', area: false, showLast: false, aria: '分项趋势'
+        ticks: [0, 50, 100, 150, 200, 250], yMin: 0, yMax: 250,
+        unit: ' 分', area: false, showLast: false, aria: '分项趋势'
       });
     });
 
+    /* 成绩构成 */
     mountChart($('#chartStack'), function (w) {
-      return CH.stackedBar({
-        width: w, height: 200,
+      return CHart.bar({
+        width: w, height: 204,
         items: list.slice(-6).map(function (r) {
           return {
             label: shortDate(r.date), total: r.total,
             parts: r.sections.map(function (s) { return { value: s.report, color: sectionColor(s.key), label: s.label }; })
           };
         }),
-        max: 710, aria: '成绩构成'
+        max: 710, ticks: scoreTicks(710), unit: '分', aria: '成绩构成'
       });
     });
 
@@ -796,7 +991,11 @@
   }
 
   function afterEntry() {
-    refreshPreview();
+    var root = $('#previewRoot');
+    if (root) root.innerHTML = previewHtml();
+    syncSteppers();
+    renderSideTip();
+    updateEntryOutputs();
   }
 
   function afterAnalysis() {
@@ -807,15 +1006,16 @@
 
     mountChart($('#chartRate'), function (w) {
       var rows = an.rows.slice().sort(function (a, b) { return a.rate - b.rate; }).map(function (s) {
-        return { label: s.short, value: s.rate, max: 100, color: sectionColor(s.key), sub: '失分 ' + s.loss + ' 分 / 满分 ' + s.max };
+        return { label: s.label, value: s.rate, max: 100, color: sectionColor(s.key), sub: '失分 ' + s.loss + ' 分 / 满分 ' + s.max };
       });
-      return CH.hbars({ width: w, rows: rows, rowH: 32, labelW: 46, rightW: 44, unit: '%' });
+      return CHart.hbars({ width: w, rows: rows, rowH: 34, labelW: 52, rightW: 46, unit: '%', aria: '各部分得分率' });
     });
 
     if (!state.planKey) {
       state.planKey = state.weeks == null ? 'mid' : (state.weeks >= 10 ? 'long' : state.weeks >= 5 ? 'mid' : state.weeks >= 2 ? 'short' : 'sprint');
     }
-    $('#stageBody').innerHTML = stageHtml(state.planKey);
+    var stageBody = $('#stageBody');
+    if (stageBody) stageBody.innerHTML = stageHtml(state.planKey);
     CH.bindTooltips($('#view'));
   }
 
@@ -823,15 +1023,15 @@
     var list = allResults();
     if (!list.length) return;
     mountChart($('#chartStackAll'), function (w) {
-      return CH.stackedBar({
-        width: w, height: 220,
+      return CHart.bar({
+        width: w, height: 214,
         items: list.slice(-8).map(function (r) {
           return {
             label: shortDate(r.date), total: r.total,
             parts: r.sections.map(function (s) { return { value: s.report, color: sectionColor(s.key), label: s.label }; })
           };
         }),
-        max: 710, aria: '成绩构成对比'
+        max: 710, ticks: scoreTicks(710), unit: '分', aria: '成绩构成对比'
       });
     });
     CH.bindTooltips($('#view'));
@@ -840,13 +1040,26 @@
   /* ============================== 交互 ============================== */
 
   var toastTimer = null;
-  function toast(msg) {
+  function toast(msg, kind) {
     var t = $('#toast');
     if (!t) return;
-    t.textContent = msg;
+    var ico = kind === 'warn' ? '⚠' : kind === 'bad' ? '✕' : '✓';
+    t.innerHTML = '<span class="t-ico ' + (kind || 'ok') + '">' + ico + '</span><span>' + esc(msg) + '</span>';
     t.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 1900);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2000);
+  }
+
+  /* 步进按钮到边界时禁用 */
+  function syncSteppers() {
+    $$('[data-act="step"]').forEach(function (b) {
+      var key = b.getAttribute('data-part');
+      var part = M.PART_MAP[key];
+      if (!part) return;
+      var cur = Number(state.draft.parts[key]) || 0;
+      var delta = Number(b.getAttribute('data-delta'));
+      b.disabled = delta > 0 ? cur >= part.count : cur <= 0;
+    });
   }
 
   var tooltipBoundOn = null;
@@ -860,11 +1073,14 @@
   function setNum(partKey, value) {
     var part = M.PART_MAP[partKey];
     if (!part) return;
-    state.draft.parts[partKey] = M.clampInt(value, 0, part.count);
+    var next = M.clampInt(value, 0, part.count);
+    var changed = next !== (Number(state.draft.parts[partKey]) || 0);
+    state.draft.parts[partKey] = next;
     var input = $('[data-num="' + partKey + '"]');
-    if (input && String(input.value) !== String(state.draft.parts[partKey])) input.value = state.draft.parts[partKey];
+    if (input && String(input.value) !== String(next)) input.value = next;
+    syncSteppers();
     persist();
-    refreshPreview();
+    if (changed) refreshPreview();
   }
 
   function saveRecord() {

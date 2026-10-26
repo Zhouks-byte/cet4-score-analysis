@@ -1,14 +1,37 @@
-﻿_dev
-qa/out*
-qa/dbg*
-qa/out*
+# 依赖
+node_modules/
+
+# 构建与 QA 中间产物
+qa/out*/
+qa/v2*/
+qa/v3*/
+qa/v4*/
+qa/live*/
+qa/dbg*/
+qa/shots/
 qa/_profile
-tools/scan-*.cjs
-tools/fix-template.mjs
-tools/index.utf8.template.html
+qa/*.png
 qa/probe*.mjs
-qa/dbg-*.mjs
+qa/dbg*.mjs
+qa/diag*.mjs
+qa/crop.mjs
+qa/dump-bar.mjs
+qa/check-*.mjs
 qa/struct.cjs
-qa/probe-shot.png
-**/_profile
-D:/应用开发/_pdf_dump.txt
+qa/charts-*.mjs
+qa/shots-*.mjs
+
+# 一次性补丁脚本（已应用，保留会造成困惑）
+tools/patch-*.mjs
+tools/fix-*.mjs
+tools/ui-v2*.mjs
+tools/scan-*.cjs
+tools/index.utf8.template.html
+tools/index.template.html.bak
+
+# 临时文件
+app.base.js
+app.recovered.js
+_records_snippet.js
+*.log
+.DS_Store
