@@ -754,12 +754,15 @@
     });
 
     mountChart($('#chartTrend'), function (w) {
+      var marks = [{ value: 425, label: '425 基本目标', color: '#f59e0b' }];
+      if (state.target !== 425) marks.push({ value: state.target, label: '目标 ' + state.target, color: '#ef4444' });
       if (state.chartMode === 'total') {
         return CH.lineChart({
           width: w, height: 210,
           labels: list.map(function (r) { return shortDate(r.date); }),
           series: [{ key: 'total', name: '总分', color: 'var(--brand)', values: list.map(function (r) { return r.total; }) }],
-          marks: [{ value: state.target, label: '目标 ' + state.target, color: '#ef4444' }, { value: 425, label: '425', color: '#f59e0b' }],          yMin: 0, yMax: 710, unit: ' 分', aria: '总分趋势'
+          marks: marks,
+          yMin: 0, yMax: 710, unit: ' 分', aria: '总分趋势'
         });
       }
       return CH.lineChart({
