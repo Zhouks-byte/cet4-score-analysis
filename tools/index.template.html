@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#4f46e5">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="四级成绩分析">
+<title>四级成绩分析 · CET-4 估分与提分建议</title>
+<meta name="description" content="录入四级各部分答对题数，按官方分值结构自动折算 710 分制报道分，展示折线图、柱状图等成绩趋势，并给出针对性提分建议。数据仅保存在本机。">
+<meta name="keywords" content="英语四级,四级成绩,四级估分,赋分,710分,成绩分析,备考建议">
+<meta property="og:type" content="website">
+<meta property="og:title" content="四级成绩分析 · CET-4 估分与提分建议">
+<meta property="og:description" content="按官方分值结构自动折算 710 分制报道分，可视化趋势与针对性提分建议。">
+<meta property="og:locale" content="zh_CN">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234f46e5'/><text x='50' y='68' font-size='54' font-weight='700' text-anchor='middle' fill='white' font-family='system-ui,sans-serif'>4</text></svg>">
+<style>
+/*__INLINE_CSS__*/
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="topbar" id="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">4</div>
+        <div class="brand-text">
+          <h1>四级成绩分析</h1>
+          <p>CET-4 估分 · 趋势 · 提分建议</p>
+        </div>
+      </div>
+      <div class="topbar-meta" id="topbarMeta"></div>
+    </div>
+  </header>
+
+  <main class="view" id="view">
+    <noscript>
+      <div class="card">
+        <div class="card-head"><div class="card-title">需要开启 JavaScript</div></div>
+        <p class="note">本页面的估分、图表与分析均在本地浏览器中运行，请开启 JavaScript 后刷新页面。</p>
+      </div>
+    </noscript>
+  </main>
+
+  <nav class="tabbar" id="tabbar" role="tablist" aria-label="主导航">
+    <button class="tab" role="tab" data-act="tab" data-view="home" aria-selected="true">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20a1 1 0 0 0 1 1H10v-6h4v6h3.5a1 1 0 0 0 1-1V9.5"/></svg>
+      <span>概览</span>
+    </button>
+    <button class="tab" role="tab" data-act="tab" data-view="entry" aria-selected="false">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z"/><path d="M14.5 6.5l3 3"/></svg>
+      <span>录入</span>
+    </button>
+    <button class="tab" role="tab" data-act="tab" data-view="analysis" aria-selected="false">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v4"/><path d="M12 17v4"/><path d="M3 12h4"/><path d="M17 12h4"/><path d="m5.6 5.6 2.8 2.8"/><path d="m15.6 15.6 2.8 2.8"/><path d="m18.4 5.6-2.8 2.8"/><path d="m8.4 15.6-2.8 2.8"/></svg>
+      <span>分析</span>
+    </button>
+    <button class="tab" role="tab" data-act="tab" data-view="records" aria-selected="false">
+      <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12"/><path d="M8 12h12"/><path d="M8 18h12"/><circle cx="4" cy="6" r="1.2"/><circle cx="4" cy="12" r="1.2"/><circle cx="4" cy="18" r="1.2"/></svg>
+      <span>记录</span>
+    </button>
+  </nav>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+/*__INLINE_JS__*/
+</script>
+</body>
+</html>

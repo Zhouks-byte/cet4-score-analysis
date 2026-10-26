@@ -1,0 +1,14 @@
+﻿_dev
+qa/out*
+qa/dbg*
+qa/out*
+qa/_profile
+tools/scan-*.cjs
+tools/fix-template.mjs
+tools/index.utf8.template.html
+qa/probe*.mjs
+qa/dbg-*.mjs
+qa/struct.cjs
+qa/probe-shot.png
+**/_profile
+D:/应用开发/_pdf_dump.txt
