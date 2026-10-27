@@ -2,6 +2,7 @@
  * tools/build.mjs — 把 src/*.css|js 内联进单文件 dist/index.html
  * 用法：node tools/build.mjs
  * 输出：dist/index.html（可直接双击打开、也可直接放 GitHub Pages）
+ *       同时把 assets/ 图标与 manifest 复制到 dist/，使 dist 目录可独立托管
  */
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -38,6 +39,31 @@ mkdirSync(join(root, 'dist'), { recursive: true });
 const finalHtml = html.replace(/^\uFEFF/, '');
 writeFileSync(join(root, 'dist', 'index.html'), finalHtml, 'utf8');
 
+/* 复制图标与 manifest 到 dist，保证 dist/ 可独立托管 */
+const assets = [
+  'assets/icon.svg',
+  'assets/favicon.svg',
+  'assets/icon-16.png',
+  'assets/icon-32.png',
+  'assets/icon-48.png',
+  'assets/icon-64.png',
+  'assets/icon-128.png',
+  'assets/icon-180.png',
+  'assets/icon-192.png',
+  'assets/icon-512.png',
+  'assets/apple-touch-icon.png',
+  'manifest.webmanifest'
+];
+let copied = 0;
+for (const rel of assets) {
+  const from = join(root, rel);
+  if (!existsSync(from)) { console.warn('  ! 缺少 ' + rel); continue; }
+  const to = join(root, 'dist', rel);
+  mkdirSync(dirname(to), { recursive: true });
+  writeFileSync(to, readFileSync(from));
+  copied++;
+}
+
 if (finalHtml.charCodeAt(0) !== 0x3c) throw new Error('构建产物首字符异常：' + JSON.stringify(finalHtml.slice(0, 20)));
 const kb = (Buffer.byteLength(finalHtml, 'utf8') / 1024).toFixed(1);
-console.log(`✓ dist/index.html 已生成（${kb} KB，CSS ${(css.length / 1024).toFixed(1)}K / JS ${(js.length / 1024).toFixed(1)}K）`);
+console.log(`✓ dist/index.html 已生成（${kb} KB，CSS ${(css.length / 1024).toFixed(1)}K / JS ${(js.length / 1024).toFixed(1)}K，图标 ${copied} 个）`);

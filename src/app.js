@@ -569,6 +569,7 @@
     });
     updateEntryOutputs();
     renderSideTip();
+    syncPreviewHeight();
   }
 
   function renderSideTip() {
@@ -869,6 +870,7 @@
     if (state.view === 'records') afterRecords();
     animateNext = false;
     window.scrollTo({ top: 0, behavior: 'auto' });
+    syncPreviewHeight();
   }
 
   /* 记录顶栏实际高度，供吸顶侧栏定位 */
@@ -876,6 +878,15 @@
     var tb = $('#topbar');
     if (!tb) return;
     document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+  }
+
+  /* 实测预览条高度并写入 --preview-h。
+     手机端预览条是固定悬浮层，内容底部必须按它的真实高度预留空间，
+     否则滚到最底部时「清空重填 / 保存并分析」会被压在下面点不到。 */
+  function syncPreviewHeight() {
+    var pv = $('#preview');
+    var fixed = pv && getComputedStyle(pv).position === 'fixed';
+    document.documentElement.style.setProperty('--preview-h', (fixed ? pv.offsetHeight : 0) + 'px');
   }
 
   /* Y 轴整数刻度：0 起，用「好读」的步长（50/100/150/200），末位不足则追加而不是改写 */
@@ -996,6 +1007,7 @@
     syncSteppers();
     renderSideTip();
     updateEntryOutputs();
+    syncPreviewHeight();
   }
 
   function afterAnalysis() {
@@ -1390,8 +1402,14 @@
       }
     });
 
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', function () { setTimeout(onResize, 260); });
+    window.addEventListener('resize', function () {
+      onResize();
+      syncTopbarHeight();
+      syncPreviewHeight();
+    });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { onResize(); syncTopbarHeight(); syncPreviewHeight(); }, 260);
+    });
     window.addEventListener('scroll', function () {
       var tb = $('#topbar');
       if (tb) tb.classList.toggle('is-scrolled', window.scrollY > 4);
@@ -1399,12 +1417,25 @@
 
     renderView();
     ensureTooltips();
+    syncTopbarHeight();
+    syncPreviewHeight();
 
-    // 键盘快捷键：1~4 切换视图（桌面端）
+    /* 键盘快捷键：1~4 切换视图；录入页聚焦数字框时 ↑/↓ 微调题数 */
     document.addEventListener('keydown', function (e) {
-      if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.target && /input|textarea|select/i.test(e.target.tagName)) {
+        if (state.view === 'entry' && e.target.matches('[data-num]') && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+          e.preventDefault();
+          var pk = e.target.getAttribute('data-num');
+          setNum(pk, (Number(state.draft.parts[pk]) || 0) + (e.key === 'ArrowUp' ? 1 : -1));
+        }
+        return;
+      }
       var map = { '1': 'home', '2': 'entry', '3': 'analysis', '4': 'records' };
-      if (map[e.key]) { state.view = map[e.key]; renderView(); }
+      if (map[e.key] && map[e.key] !== state.view) {
+        state.view = map[e.key];
+        renderView();
+      }
     });
 
     // 每天首次打开提示保存

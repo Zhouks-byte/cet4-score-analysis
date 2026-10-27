@@ -65,6 +65,19 @@
 - 数据持久化到 `localStorage`，支持导出 / 导入 JSON 备份、删除单条、清空全部；
 - 无网络请求、无第三方脚本、无统计埋点。
 
+### 6. 图标与按钮布局（v3）
+- **站点图标**：`assets/icon.svg`（1:1 正方形），蓝紫渐变圆角底 + 270° 仪表环 + 环心粗体「4」，
+  与站内估分仪表盘同构；环心数字经**实测再居中**（包围盒中心对齐画布中心 256,256）；
+- **多尺寸输出**：`tools/gen-icons.mjs` 用无头浏览器精确渲染 16/32/48/64/128/180/192/512 PNG，
+  并生成 `favicon.svg`、`apple-touch-icon.png`、`manifest.webmanifest`（支持安装到桌面）；
+  16px 下仍可辨识；
+- **按钮不再遮挡**：新增 `qa/overlap.mjs` 遮挡检测器（5 种视口 × 4 个页面），修复了
+  表单双列里 `datetime-local` 撑破列导致压住备注框（改用 `minmax(0,1fr)` + `.input{min-width:0}`）、
+  底部导航按钮间隙过小、分段控件选项间距过窄等问题；
+- **预览条不再压按钮**：手机端预览条改为固定悬浮，并由 JS 实测其高度写入 `--preview-h`，
+  动态预留底部空间，滚到底时「清空重填 / 保存并分析」始终可点；
+- 检测结果：**重叠 0 / 不可点击 0 / 溢出 0 / 间隙过近 0**（5 视口 × 4 视图全部通过）。
+
 ---
 
 ## 目录结构
@@ -80,8 +93,12 @@ cet4-score-analysis/
 │   ├── analysis.js         # 诊断与建议引擎
 │   ├── app.js              # 交互与渲染
 │   └── styles.css          # 设计系统（设计令牌 + 移动优先 + 深色模式）
+├── assets/                 # 站点图标（SVG 源 + 16~512 PNG + apple-touch）
+├── manifest.webmanifest    # PWA manifest（可安装到桌面/主屏）
 ├── tools/
-│   ├── build.mjs           # 把 src 内联为单文件 dist/index.html
+│   ├── build.mjs           # 把 src 内联为单文件 dist/index.html，并复制图标
+│   ├── gen-icons.mjs       # 由 icon.svg 渲染各尺寸 PNG 图标
+│   ├── wire-icons.mjs      # 把图标接入页面模板与 manifest
 │   ├── cleanup.mjs         # 清理 QA 中间产物
 │   └── index.template.html # 页面骨架
 ├── tests/
@@ -89,6 +106,9 @@ cet4-score-analysis/
 │   └── charts.test.js      # 图表库单元测试（112 项断言）
 └── qa/
     ├── cdp.mjs             # 无依赖 CDP 浏览器 QA（53 项断言 + 10 张截图）
+    ├── overlap.mjs         # 按钮遮挡/重叠/间距检测器（5 视口 × 4 视图）
+    ├── icon-compare.mjs    # 图标多方案对比图（含 16/24/32/64px 缩放检查）
+    ├── icon-bbox.mjs       # 图标元素包围盒实测（校正光学居中）
     ├── probe-page.mjs      # 单页冒烟探针
     ├── shots-light.mjs     # 浅色模式逐屏截图
     └── shots-entry.mjs     # 录入页侧栏布局检查
@@ -106,6 +126,14 @@ node tests/charts.test.js
 
 # 浏览器端自动化 QA（需本机有 Edge 或 Chrome）
 node qa/cdp.mjs "file:///<绝对路径>/dist/index.html" qa/out
+
+# 按钮遮挡检测（防回归）
+node qa/overlap.mjs "file:///<绝对路径>/dist/index.html" qa/overlap
+
+# 重新生成图标（改了 icon.svg 之后）
+node tools/gen-icons.mjs
+node tools/wire-icons.mjs
+node tools/build.mjs
 ```
 
 > 注意：`tools/build.mjs` 会强制去掉 UTF-8 BOM —— 带 BOM 的单文件 HTML 会让浏览器提前结束解析，整页退化为纯文本。

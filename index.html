@@ -16,7 +16,13 @@
 <meta property="og:title" content="四级成绩分析 · CET-4 估分与提分建议">
 <meta property="og:description" content="按官方分值结构自动折算 710 分制报道分，可视化趋势与针对性提分建议。">
 <meta property="og:locale" content="zh_CN">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234f46e5'/><text x='50' y='68' font-size='54' font-weight='700' text-anchor='middle' fill='white' font-family='system-ui,sans-serif'>4</text></svg>">
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/icon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/icon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="assets/icon-48.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <style>
 /* ==========================================================================
    四级成绩分析 — 设计系统 v2
@@ -225,13 +231,16 @@ svg { display: block; }
   flex: none;
   display: grid; place-items: center;
   border-radius: 11px;
-  background: linear-gradient(145deg, var(--brand), var(--brand-2));
+  /* 图标本身自带渐变圆角底，这里不再叠加背景，避免出现双层圆角 */
+  background: transparent;
   color: #fff;
   font-size: 18px;
   font-weight: 800;
   letter-spacing: -.5px;
-  box-shadow: 0 5px 14px -6px var(--brand), inset 0 1px 0 rgba(255, 255, 255, .28);
+  overflow: hidden;
+  box-shadow: 0 5px 14px -6px var(--brand);
 }
+.brand-mark svg { width: 100%; height: 100%; display: block; }
 
 .brand-text { min-width: 0; }
 .brand-text h1 {
@@ -372,18 +381,23 @@ svg { display: block; }
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 3px;
-  padding: 3px;
+  /* 8px：分段按钮之间需要明确的视觉间隙，避免两个选项看起来连成一体 */
+  gap: 8px;
+  padding: 5px;
   background: var(--card-3);
-  border-radius: 12px;
+  border-radius: 13px;
 }
 .seg button {
   position: relative;
+  min-width: 0;
   padding: 8px 6px;
   border-radius: 9px;
   font-size: 12.5px;
   font-weight: 650;
   color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   transition: color .2s var(--ease), background .2s var(--ease), box-shadow .2s var(--ease);
 }
 .seg button[aria-selected="true"] {
@@ -392,6 +406,13 @@ svg { display: block; }
   box-shadow: var(--sh-2);
 }
 .seg button:active { transform: scale(.985); }
+
+/* 分段控件之间留出可辨识的间隙，避免两个按钮贴在一起难以点选 */
+/* 窄屏：按钮更紧凑，但仍保留足够间隙（不小于 7px） */
+@media (max-width: 380px) {
+  .seg { gap: 7px; padding: 4px; }
+  .seg button { font-size: 12px; padding: 8px 4px; }
+}
 
 /* ------------------------------ 录入行 ------------------------------ */
 .part {
@@ -645,10 +666,16 @@ svg { display: block; }
 .btn.sm .ico { width: 15px; height: 15px; }
 .btn.danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 26%, var(--line)); background: var(--bad-soft); }
 
-/* ------------------------------ 实时预览条（录入页） ------------------------------ */
+/* ------------------------------ 实时预览条（录入页） ------------------------------
+   手机端：固定悬浮在底部导航上方（不占文档流），并让 .view-entry 按实测高度预留底部空间，
+   保证滚到最底部时「清空重填 / 保存并分析」不会被它压住。
+   宽屏：由 .entry-side 变成右侧吸顶卡片，不再固定。 */
 .preview {
-  position: sticky;
-  bottom: calc(var(--nav-h) + 10px + env(safe-area-inset-bottom, 0px));
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - var(--pad) * 2), 430px);
+  bottom: calc(var(--nav-h) + 16px + env(safe-area-inset-bottom, 0px));
   z-index: 30;
   border-radius: var(--r-md);
   padding: 13px 15px;
@@ -1055,8 +1082,12 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
 /* ------------------------------ 表单 ------------------------------ */
 .field { display: grid; gap: 6px; min-width: 0; }
 .field > label { font-size: 12px; font-weight: 650; color: var(--ink-2); }
+/* 原生 datetime-local 控件有固定的内部最小宽度，在窄列里会溢出并压到相邻输入框。
+   这里允许它收缩，并用 min-width:0 解除网格项的最小尺寸限制。 */
 .input {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   padding: 10px 12px;
   border-radius: 11px;
   border: 1.5px solid var(--line);
@@ -1068,6 +1099,9 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
   appearance: none;
   transition: border-color .16s var(--ease), box-shadow .16s var(--ease), background .16s var(--ease);
 }
+input[type="datetime-local"].input,
+input[type="date"].input { font-size: 14px; padding-right: 8px; }
+input[type="datetime-local"].input::-webkit-calendar-picker-indicator { margin-left: 2px; flex: none; }
 .input:focus {
   border-color: var(--brand);
   background: var(--card);
@@ -1105,9 +1139,10 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
   z-index: 50;
   width: min(calc(100% - 20px), 430px);
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 2px;
-  padding: 5px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* 6px 间隙：相邻按钮需有可辨识的间隔，避免误触（原来 2px 几乎连成一体） */
+  gap: 6px;
+  padding: 6px;
   border-radius: 18px;
   background: color-mix(in srgb, var(--card) 86%, transparent);
   -webkit-backdrop-filter: saturate(180%) blur(20px);
@@ -1120,12 +1155,16 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
+  min-width: 0;
   padding: 7px 4px 6px;
   border-radius: 13px;
   color: var(--muted);
   font-size: 10.5px;
   font-weight: 650;
+  white-space: nowrap;
+  overflow: hidden;
   transition: color .22s var(--ease), background .22s var(--ease), transform .16s var(--ease);
 }
 .tab .ico { width: 20px; height: 20px; transition: transform .22s var(--ease-out); }
@@ -1281,9 +1320,10 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
 .t-ico.warn { background: var(--warn); color: #1a1400; }
 .t-ico.bad { background: var(--bad); color: #fff; }
 
-/* 表单双列（宽屏） */
+/* 表单双列（宽屏）：用 minmax(0,1fr) 防止 datetime-local 等原生控件撑破列、
+   进而压到右侧备注输入框（这正是「按键/输入框互相遮挡」的根因）。 */
 @media (min-width: 560px) {
-  .form-grid.two { grid-template-columns: 1fr 1fr; }
+  .form-grid.two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 
 /* 宽屏：侧栏提示可见 */
@@ -1294,11 +1334,24 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
   .donut-wrap { width: auto; max-width: 160px; }
 }
 
-/* 手机端录入页：预览浮动在内容之上 */
-.view-entry.has-preview { padding-bottom: calc(var(--nav-h) + 96px + env(safe-area-inset-bottom, 0px)); }
+/* 手机端录入页：预览条固定悬浮，按实测高度预留底部空间（--preview-h 由 JS 写入），
+   这样滚到最底部时「清空重填 / 保存并分析」不会被预览条压住。 */
+.view-entry.has-preview {
+  padding-bottom: calc(var(--nav-h) + var(--preview-h, 132px) + 34px + env(safe-area-inset-bottom, 0px));
+}
 .entry-side { display: contents; }
+
 @media (min-width: 760px) {
+  /* 宽屏：预览条不再是固定层，改为右栏吸顶卡片，因此还原为正常文档流 */
   .entry-side { display: flex; }
+  .preview {
+    position: static;
+    left: auto;
+    transform: none;
+    width: auto;
+    z-index: auto;
+  }
+  .view-entry.has-preview { padding-bottom: calc(var(--nav-h) + 40px + env(safe-area-inset-bottom, 0px)); }
 }
 
 @keyframes bump {
@@ -1348,7 +1401,22 @@ details.acc .acc-body { padding-top: 8px; animation: accIn .22s var(--ease-out) 
   <header class="topbar" id="topbar">
     <div class="topbar-inner">
       <div class="brand">
-        <div class="brand-mark" aria-hidden="true">4</div>
+        <div class="brand-mark" aria-hidden="true"><svg viewBox="0 0 512 512" width="100%" height="100%" aria-hidden="true" focusable="false">
+          <defs>
+            <linearGradient id="bm-bg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#7b78ff"/><stop offset="52%" stop-color="#5b5bf5"/><stop offset="100%" stop-color="#8b5cf6"/>
+            </linearGradient>
+            <linearGradient id="bm-ring" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#dcd7ff"/>
+            </linearGradient>
+          </defs>
+          <rect x="36" y="36" width="440" height="440" rx="112" fill="url(#bm-bg)"/>
+          <g transform="rotate(135 256 256)">
+            <circle cx="256" cy="256" r="158" fill="none" stroke="#fff" stroke-opacity="0.22" stroke-width="42" stroke-linecap="round" stroke-dasharray="744.6 248.2"/>
+            <circle cx="256" cy="256" r="158" fill="none" stroke="url(#bm-ring)" stroke-width="42" stroke-linecap="round" stroke-dasharray="528 466"/>
+          </g>
+          <text x="252.6" y="339" text-anchor="middle" fill="#fff" font-size="200" font-weight="800" letter-spacing="-10" font-family="'Segoe UI','PingFang SC','Microsoft YaHei',Arial,sans-serif">4</text>
+        </svg></div>
         <div class="brand-text">
           <h1>四级成绩分析</h1>
           <p>CET-4 估分 · 趋势 · 提分建议</p>
@@ -3964,6 +4032,7 @@ window.CET4_CONTENT = {
     });
     updateEntryOutputs();
     renderSideTip();
+    syncPreviewHeight();
   }
 
   function renderSideTip() {
@@ -4264,6 +4333,7 @@ window.CET4_CONTENT = {
     if (state.view === 'records') afterRecords();
     animateNext = false;
     window.scrollTo({ top: 0, behavior: 'auto' });
+    syncPreviewHeight();
   }
 
   /* 记录顶栏实际高度，供吸顶侧栏定位 */
@@ -4271,6 +4341,15 @@ window.CET4_CONTENT = {
     var tb = $('#topbar');
     if (!tb) return;
     document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+  }
+
+  /* 实测预览条高度并写入 --preview-h。
+     手机端预览条是固定悬浮层，内容底部必须按它的真实高度预留空间，
+     否则滚到最底部时「清空重填 / 保存并分析」会被压在下面点不到。 */
+  function syncPreviewHeight() {
+    var pv = $('#preview');
+    var fixed = pv && getComputedStyle(pv).position === 'fixed';
+    document.documentElement.style.setProperty('--preview-h', (fixed ? pv.offsetHeight : 0) + 'px');
   }
 
   /* Y 轴整数刻度：0 起，用「好读」的步长（50/100/150/200），末位不足则追加而不是改写 */
@@ -4391,6 +4470,7 @@ window.CET4_CONTENT = {
     syncSteppers();
     renderSideTip();
     updateEntryOutputs();
+    syncPreviewHeight();
   }
 
   function afterAnalysis() {
@@ -4785,8 +4865,14 @@ window.CET4_CONTENT = {
       }
     });
 
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', function () { setTimeout(onResize, 260); });
+    window.addEventListener('resize', function () {
+      onResize();
+      syncTopbarHeight();
+      syncPreviewHeight();
+    });
+    window.addEventListener('orientationchange', function () {
+      setTimeout(function () { onResize(); syncTopbarHeight(); syncPreviewHeight(); }, 260);
+    });
     window.addEventListener('scroll', function () {
       var tb = $('#topbar');
       if (tb) tb.classList.toggle('is-scrolled', window.scrollY > 4);
@@ -4794,12 +4880,25 @@ window.CET4_CONTENT = {
 
     renderView();
     ensureTooltips();
+    syncTopbarHeight();
+    syncPreviewHeight();
 
-    // 键盘快捷键：1~4 切换视图（桌面端）
+    /* 键盘快捷键：1~4 切换视图；录入页聚焦数字框时 ↑/↓ 微调题数 */
     document.addEventListener('keydown', function (e) {
-      if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.target && /input|textarea|select/i.test(e.target.tagName)) {
+        if (state.view === 'entry' && e.target.matches('[data-num]') && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {
+          e.preventDefault();
+          var pk = e.target.getAttribute('data-num');
+          setNum(pk, (Number(state.draft.parts[pk]) || 0) + (e.key === 'ArrowUp' ? 1 : -1));
+        }
+        return;
+      }
       var map = { '1': 'home', '2': 'entry', '3': 'analysis', '4': 'records' };
-      if (map[e.key]) { state.view = map[e.key]; renderView(); }
+      if (map[e.key] && map[e.key] !== state.view) {
+        state.view = map[e.key];
+        renderView();
+      }
     });
 
     // 每天首次打开提示保存

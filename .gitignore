@@ -1,33 +1,44 @@
 # 依赖
 node_modules/
 
-# 构建与 QA 中间产物
+# QA / 截图中间产物
 qa/out*/
 qa/v2*/
 qa/v3*/
 qa/v4*/
+qa/v5*/
 qa/live*/
+qa/overlap/
+qa/overlap[0-9]*/
 qa/dbg*/
 qa/shots/
-qa/_profile
 qa/*.png
-qa/probe*.mjs
-qa/dbg*.mjs
+qa/*.cjs
+qa/_*.html
+qa/inspect*.mjs
+qa/i[0-9]*.mjs
+qa/check-*.mjs
+qa/r[0-9]*.mjs
+qa/overlap-report*.mjs
+qa/restore-*.mjs
+qa/bm-shot.mjs
+qa/struct.cjs
 qa/diag*.mjs
 qa/crop.mjs
 qa/dump-bar.mjs
-qa/check-*.mjs
-qa/struct.cjs
-qa/charts-*.mjs
-qa/shots-*.mjs
+qa/probe*.mjs
+qa/dbg*.mjs
 
-# 一次性补丁脚本（已应用，保留会造成困惑）
+# 一次性维护脚本（已执行完毕，保留会干扰阅读）
 tools/patch-*.mjs
 tools/fix-*.mjs
 tools/ui-v2*.mjs
+tools/wire-preview*.mjs
+tools/rewrite-build.mjs
+tools/dedupe-imports.mjs
+tools/readme-v3.mjs
 tools/scan-*.cjs
 tools/index.utf8.template.html
-tools/index.template.html.bak
 
 # 临时文件
 app.base.js
