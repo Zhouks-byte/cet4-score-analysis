@@ -68,6 +68,29 @@
     return w;
   }
 
+  /**
+   * 浮层内容构造器：统一输出「标题 / 副标题 / 明细行」三级结构，
+   * 交由 CSS（.chart-tip b / .tip-sub / .tip-row）分级排版。
+   * @param {Object} o { title, sub, rows:[{label,value,color}] }
+   */
+  function tip(o) {
+    o = o || {};
+    var html = '';
+    if (o.title != null && o.title !== '') html += '<b>' + esc(o.title) + '</b>';
+    if (o.sub != null && o.sub !== '') html += '<span class="tip-sub">' + esc(o.sub) + '</span>';
+    if (o.rows && o.rows.length) {
+      o.rows.forEach(function (r) {
+        if (!r) return;
+        html += '<span class="tip-row">' +
+          (r.color ? '<i style="background:' + String(r.color) + '"></i>' : '') +
+          esc(r.label || '') +
+          (r.value != null ? ' <em>' + esc(r.value) + '</em>' : '') +
+          '</span>';
+      });
+    }
+    return html;
+  }
+
   /** 折线平滑（Catmull-Rom → 三次贝塞尔），并把控制点钳制在绘图区内避免溢出
    *  t 取 0.5 是 Catmull-Rom 的标准张力，曲线会精确穿过每个数据点 */
   function smoothPath(pts, lo, hi) {
@@ -230,7 +253,10 @@
             (isLast && single ? 4.2 : 3) + '" fill="' + color + '" stroke="var(--card)" stroke-width="1.6"/>';
         }
         body += '<circle class="hit" cx="' + n(p.x) + '" cy="' + n(p.y) + '" r="14" fill="transparent" data-tip="' +
-          esc('<b>' + (s.name ? s.name + ' ' : '') + n(p.v, 1) + unit + '</b><br>' + (labels[p.i] || '')) + '"/>';
+          esc(tip({
+            title: n(p.v, 1) + unit,
+            sub: (s.name ? s.name + ' · ' : '') + (labels[p.i] || '')
+          })) + '"/>';
       });
 
       if (single && o.showLast !== false && pts.length) {
@@ -318,12 +344,20 @@
             ' L' + n(bx + bwid) + ',' + n(by + bh) + ' Z';
           body += '<path class="c-bar" d="' + dpath + '" fill="' + (p.color || 'var(--brand)') + '" ' +
             'style="animation-delay:' + (i * 30) + 'ms" data-tip="' +
-            esc('<b>' + (p.label || '') + ' ' + n(v, 1) + unit + '</b><br>' + it.label) + '"/>';
+            esc(tip({
+              title: n(v, 1) + unit,
+              sub: (p.label || '') + ' · ' + (it.label || ''),
+              rows: [{ label: '占本次总分', value: (it.total > 0 ? Math.round(v / it.total * 100) : 0) + '%' }]
+            })) + '"/>';
         } else {
           body += '<rect class="c-bar" x="' + x + '" y="' + n(y1) + '" width="' + n(bw) + '" height="' + n(h) +
             '" fill="' + (p.color || 'var(--brand)') + '" ' +
             'style="animation-delay:' + (i * 30) + 'ms" data-tip="' +
-            esc('<b>' + (p.label || '') + ' ' + n(v, 1) + unit + '</b><br>' + it.label) + '"/>';
+            esc(tip({
+              title: n(v, 1) + unit,
+              sub: (p.label || '') + ' · ' + (it.label || ''),
+              rows: [{ label: '占本次总分', value: (it.total > 0 ? Math.round(v / it.total * 100) : 0) + '%' }]
+            })) + '"/>';
         }
       });
 
@@ -340,8 +374,13 @@
       }
       /* 整列命中区（显示总分与构成） */
       body += '<rect x="' + n(cx - slot / 2 + 1) + '" y="' + pad.t + '" width="' + n(slot - 2) + '" height="' + ih +
-        '" fill="transparent" data-tip="' + esc('<b>' + n(it.total, 1) + unit + '</b><br>' + it.label +
-          (parts.length ? '<br>' + parts.map(function (p) { return (p.label || '') + ' ' + n(p.value, 1); }).join(' · ') : '')) + '"/>';
+        '" fill="transparent" data-tip="' + esc(tip({
+          title: n(it.total, 1) + unit,
+          sub: it.label || '',
+          rows: parts.filter(function (p) { return Number(p.value) > 0; }).map(function (p) {
+            return { label: p.label || '', value: n(p.value, 1) + unit, color: p.color };
+          })
+        })) + '"/>';
     });
 
     return openSvg(W, H, o.aria) + grid + body + '</svg>';
@@ -405,8 +444,11 @@
       out += '<text x="' + n(W - 1) + '" y="' + n(cy + 3.4) + '" text-anchor="end" font-size="10.5" font-weight="700" ' +
         'fill="currentColor" fill-opacity=".82">' + esc(valTxt) + '</text>';
       out += '<rect x="0" y="' + (i * rowH) + '" width="' + n(W) + '" height="' + rowH + '" fill="transparent" data-tip="' +
-        esc('<b>' + (r.label || '') + '</b><br>' + n(v, 1) + (unit || '') +
-          (r.max ? ' / ' + n(r.max, 1) + (unit || '') : '') + (r.sub ? '<br>' + r.sub : '')) + '"/>';
+        esc(tip({
+          title: (r.label || ''),
+          sub: n(v, 1) + (unit || '') + (r.max ? ' / ' + n(r.max, 1) + (unit || '') : ''),
+          rows: r.sub ? [{ label: r.sub }] : null
+        })) + '"/>';
     });
 
     return openSvg(W, H, o.aria) + out + '</svg>';
@@ -443,7 +485,11 @@
           (seg.color || 'var(--brand)') + '" stroke-width="' + th + '" stroke-linecap="round" ' +
           'stroke-dasharray="' + n(len) + ' ' + n(circ - len) + '" stroke-dashoffset="' + n(off) + '" ' +
           'transform="rotate(-90 ' + n(cx) + ' ' + n(cy) + ')" data-tip="' +
-          esc('<b>' + (seg.label || '') + '</b><br>' + n(seg.value, 1) + ' 分 · ' + Math.round(frac * 100) + '%') + '"/>';
+          esc(tip({
+            title: (seg.label || ''),
+            sub: n(seg.value, 1) + ' 分',
+            rows: [{ label: '占总分', value: Math.round(frac * 100) + '%', color: seg.color }]
+          })) + '"/>';
         acc += frac;
       });
     }

@@ -78,6 +78,16 @@
   动态预留底部空间，滚到底时「清空重填 / 保存并分析」始终可点；
 - 检测结果：**重叠 0 / 不可点击 0 / 溢出 0 / 间隙过近 0**（5 视口 × 4 视图全部通过）。
 
+### 7. 图表浮层提示（v4）
+- **修复「白底白字」**：原 `.chart-tip` 用 `color-mix(--ink 94%)` 作背景，而 `--ink` 是**正文文字色**，
+  深色模式下接近白色，于是浮层变成白底白字。现改用专用令牌 `--tip-bg / --tip-ink / --tip-ink-2 / --tip-line`，
+  深浅两套主题各自定义，浮层始终是「深底浅字」，与系统配色协调；
+- **排版升级**：首行大号数值、次行次级色说明、底部带分隔线的明细行，长文案自动折行且限宽不溢出；
+- **对比度实测**：浅色主题主文字 **14.82:1**、次级 8.82:1；深色主题主文字 **13.25:1**、次级 8.49:1
+  （WCAG AAA 要求 ≥ 7:1，均大幅超出）；
+- **回归保护**：新增 `tests/tooltip.test.js`（31 项断言），自动校验令牌存在、禁止再用 `--ink` 作浮层背景、
+  对比度阈值与排版规则，防止以后改配色时再次退化。
+
 ---
 
 ## 目录结构
@@ -103,12 +113,14 @@ cet4-score-analysis/
 │   └── index.template.html # 页面骨架
 ├── tests/
 │   ├── model.test.js       # 赋分引擎单元测试（90 项断言）
-│   └── charts.test.js      # 图表库单元测试（112 项断言）
+│   ├── charts.test.js      # 图表库单元测试（112 项断言）
+│   └── tooltip.test.js     # 浮层配色对比度测试（31 项断言）
 └── qa/
     ├── cdp.mjs             # 无依赖 CDP 浏览器 QA（53 项断言 + 10 张截图）
     ├── overlap.mjs         # 按钮遮挡/重叠/间距检测器（5 视口 × 4 视图）
     ├── icon-compare.mjs    # 图标多方案对比图（含 16/24/32/64px 缩放检查）
     ├── icon-bbox.mjs       # 图标元素包围盒实测（校正光学居中）
+    ├── tip-fixed.mjs       # 浮层配色实拍（深色/浅色 × 折线/柱状/环形）
     ├── probe-page.mjs      # 单页冒烟探针
     ├── shots-light.mjs     # 浅色模式逐屏截图
     └── shots-entry.mjs     # 录入页侧栏布局检查
@@ -123,6 +135,7 @@ node tools/build.mjs
 # 单元测试
 node tests/model.test.js
 node tests/charts.test.js
+node tests/tooltip.test.js
 
 # 浏览器端自动化 QA（需本机有 Edge 或 Chrome）
 node qa/cdp.mjs "file:///<绝对路径>/dist/index.html" qa/out
