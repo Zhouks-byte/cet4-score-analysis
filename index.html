@@ -1451,6 +1451,380 @@ input[type="datetime-local"].input::-webkit-calendar-picker-indicator { margin-l
   .card { box-shadow: none; border-color: #ddd; break-inside: avoid; }
 }
 
+
+/* ==========================================================================
+   PWA 安装引导 / 离线提示 / 独立模式适配
+   ========================================================================== */
+
+/* ------------------------------ 安装提示条 ------------------------------ */
+.install-bar {
+  position: fixed;
+  left: 50%;
+  /* 停在底部导航上方；z-index 低于 toast（70），避免两个浮层互相遮挡 */
+  bottom: calc(var(--nav-h) + 14px + env(safe-area-inset-bottom, 0px));
+  transform: translate(-50%, 16px);
+  z-index: 55;
+  width: min(calc(100% - 24px), 420px);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 11px;
+  border-radius: 15px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--sh-pop);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .26s var(--ease), transform .3s var(--ease-out);
+}
+.install-bar.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+  pointer-events: auto;
+}
+
+/* 安装条出现时，页面底部额外预留空间，避免遮住最后一屏内容 */
+body.has-install-bar .view {
+  padding-bottom: calc(
+    var(--nav-h) + var(--preview-h, 0px) + 78px + env(safe-area-inset-bottom, 0px)
+  );
+}
+/* 录入页本身已按预览条高度预留，这里只叠加安装条高度 */
+body.has-install-bar .view-entry.has-preview {
+  padding-bottom: calc(
+    var(--nav-h) + var(--preview-h, 0px) + 96px + env(safe-area-inset-bottom, 0px)
+  );
+}
+
+/* 安装条与 toast 同时出现时，把 toast 抬到安装条上方 */
+body.has-install-bar .toast {
+  bottom: calc(var(--nav-h) + 84px + env(safe-area-inset-bottom, 0px));
+}
+
+.ib-icon {
+  width: 34px; height: 34px;
+  flex: none;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px -6px var(--brand);
+}
+.ib-icon svg { width: 100%; height: 100%; display: block; }
+
+.ib-main { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.ib-main b {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--ink);
+  letter-spacing: -.15px;
+}
+.ib-main span {
+  font-size: 10.5px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ib-btn {
+  flex: none;
+  padding: 7px 13px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--brand), var(--brand-2));
+  color: #fff;
+  font-size: 12px;
+  font-weight: 720;
+  box-shadow: 0 6px 14px -8px var(--brand);
+  transition: transform .12s var(--ease);
+}
+.ib-btn:active { transform: scale(.95); }
+
+.ib-close {
+  flex: none;
+  width: 24px; height: 24px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+  font-size: 17px;
+  line-height: 1;
+  transition: background .16s var(--ease), color .16s var(--ease);
+}
+.ib-close:hover { background: var(--card-3); color: var(--ink); }
+
+/* ------------------------------ 图文指引 ------------------------------ */
+.guide-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(10, 12, 20, .52);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  opacity: 0;
+  transition: opacity .24s var(--ease);
+}
+.guide-mask.show { opacity: 1; }
+
+.guide-card {
+  width: min(100%, 380px);
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 20px 18px 16px;
+  box-shadow: var(--sh-pop);
+  transform: translateY(10px) scale(.98);
+  transition: transform .28s var(--ease-out);
+}
+.guide-mask.show .guide-card { transform: none; }
+
+.guide-card h3 {
+  font-size: 16px;
+  font-weight: 780;
+  letter-spacing: -.3px;
+  margin-bottom: 13px;
+  text-align: center;
+}
+.guide-steps {
+  display: grid;
+  gap: 10px;
+  counter-reset: step;
+  margin-bottom: 12px;
+}
+.guide-steps li {
+  position: relative;
+  padding-left: 27px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: var(--ink-2);
+  counter-increment: step;
+}
+.guide-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0; top: 1px;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--brand) 13%, transparent);
+  color: var(--brand-ink);
+  font-size: 10.5px;
+  font-weight: 800;
+}
+.guide-steps b { color: var(--ink); font-weight: 700; }
+.gico {
+  width: 15px; height: 15px;
+  display: inline-block;
+  vertical-align: -2px;
+  color: var(--brand);
+}
+.guide-note {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--muted);
+  background: var(--card-2);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  margin-bottom: 14px;
+}
+
+/* ------------------------------ 离线提示 ------------------------------ */
+.offline-hint {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: 50%;
+  transform: translate(-50%, -14px);
+  z-index: 65;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 12px;
+  border-radius: var(--r-pill);
+  background: var(--warn-soft);
+  border: 1px solid color-mix(in srgb, var(--warn) 30%, transparent);
+  color: var(--warn);
+  font-size: 11px;
+  font-weight: 650;
+  box-shadow: var(--sh-2);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .24s var(--ease), transform .26s var(--ease-out);
+}
+.offline-hint.show { opacity: 1; transform: translate(-50%, 0); }
+.oh-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--warn);
+  flex: none;
+  animation: ohPulse 1.8s ease-in-out infinite;
+}
+@keyframes ohPulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+/* ------------------------------ 独立模式（已安装为 App） ------------------------------ */
+@media (display-mode: standalone), (display-mode: fullscreen) {
+  /* 已全屏运行：隐藏安装入口，收紧顶部留白 */
+  .install-bar { display: none !important; }
+  .topbar {
+    padding-top: calc(6px + env(safe-area-inset-top, 0px));
+  }
+  /* 保留底部安全区，避免与 iOS 手势条冲突 */
+  .tabbar {
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* 横屏小高度时隐藏安装条，避免遮挡内容 */
+@media (max-height: 520px) {
+  .install-bar { display: none !important; }
+}
+
+/* 打印时隐藏所有引导 */
+@media print {
+  .install-bar, .guide-mask, .offline-hint { display: none !important; }
+}
+
+
+/* ==========================================================================
+   记录切换条 / 可点击记录行
+   —— 支持在分析页查看历史任意一次成绩
+   ========================================================================== */
+
+/* ------------------------------ 记录切换条 ------------------------------ */
+.switch-bar {
+  position: sticky;
+  /* 吸顶在顶栏下方；z-index 需高于普通卡片，但低于底部导航/浮层 */
+  top: calc(var(--topbar-h, 58px) + 6px);
+  z-index: 35;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-color: var(--line);
+}
+
+.sb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sb-nav {
+  width: 32px; height: 32px;
+  flex: none;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  transition: background .16s var(--ease), border-color .16s var(--ease), color .16s var(--ease), transform .12s var(--ease);
+}
+.sb-nav:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--brand) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+  color: var(--brand);
+}
+.sb-nav:active:not([disabled]) { transform: scale(.92); }
+.sb-nav[disabled] { opacity: .3; pointer-events: none; }
+.sb-ico { width: 16px; height: 16px; }
+.sb-ico.flipleft { transform: rotate(90deg); }
+.sb-nav:last-child .sb-ico { transform: rotate(-90deg); }
+
+.sb-main { flex: 1; min-width: 0; }
+.sb-title {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--ink);
+  letter-spacing: -.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-sub b { color: var(--ink-2); font-weight: 700; }
+.sb-sub b.up { color: var(--ok); }
+
+.sb-score {
+  flex: none;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.6px;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+.sb-score small {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-left: 1px;
+}
+
+.sb-latest { margin-top: 9px; }
+
+/* ------------------------------ 可点击记录行 ------------------------------ */
+.rec-click {
+  cursor: pointer;
+  transition: background .16s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.rec-click:hover { background: var(--card-2); }
+.rec-click:active { background: var(--card-3); }
+.rec-click:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+/* 正在查看的那一条：左侧色条加宽 + 淡背景，明确当前上下文 */
+.rec-click.is-focus {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+.rec-click.is-focus .rec-dot { width: 4px; }
+
+/* 记录行尾部的删除按钮不应触发"打开分析" */
+.rec-del, .rec-click .btn { flex: none; }
+
+/* 表格行可点击 */
+.tbl-click {
+  cursor: pointer;
+  transition: background .16s var(--ease);
+}
+.tbl-click:hover { background: var(--card-2); }
+.tbl-click:active { background: var(--card-3); }
+.tbl-click:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+/* 记录页顶部提示：点任意一行查看该次分析 */
+.rec-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  margin: -4px 0 9px;
+}
+.rec-hint .ico { width: 13px; height: 13px; color: var(--brand); opacity: .85; }
+
+/* 窄屏压缩切换条 */
+@media (max-width: 380px) {
+  .sb-score { font-size: 15px; }
+  .sb-title { font-size: 12px; }
+  .sb-nav { width: 30px; height: 30px; }
+}
+
+/*__INLINE_PWA_CSS__*/
 </style>
 </head>
 <body>
@@ -3337,9 +3711,9 @@ window.CET4_CONTENT = {
         '你当前 ' + result.totalInt + ' 分，目标 ' + target + ' 分。按分值结构，这大约相当于 ' +
         countItems(need) + '。优先攻克单位收益高且正确率低的题型，提分效率最高。');
     } else {
+      var over = Math.max(0, result.totalInt - target);
       push('good', '✓', '已达到 ' + target + ' 分目标',
-        '当前 ' + result.totalInt + ' 分，比目标高 ' + Math.round(-result.passGap < 0 ? 0 : 0) + '' +
-        (result.totalInt >= target ? (result.totalInt - target) : 0) + ' 分。建议把目标上移一档，把训练重心放在稳定性和主观题上。');
+        '当前 ' + result.totalInt + ' 分，比目标高 ' + over + ' 分。建议把目标上移一档，把训练重心放在稳定性和主观题上。');
     }
 
     // 2. 客观题 0 分 / 缺考规则
@@ -3639,6 +4013,8 @@ window.CET4_CONTENT = {
     weeks: null,
     records: [],
     draft: null,
+    /* 当前正在查看分析的记录 id；null 表示跟随最新一次 */
+    focusId: null,
     chartMode: 'total',
     seriesOn: { listening: true, reading: true, writing: true, translation: true },
     compareId: null
@@ -3672,6 +4048,7 @@ window.CET4_CONTENT = {
         }
         if (d && isFinite(d.target)) state.target = d.target;
         if (d && (d.weeks === null || isFinite(d.weeks))) state.weeks = d.weeks;
+        if (d && typeof d.focusId === 'string') state.focusId = d.focusId;
         if (d && d.draft) state.draft = d.draft;
       } catch (e) { /* ignore */ }
     }
@@ -3683,6 +4060,7 @@ window.CET4_CONTENT = {
       localStorage.setItem(KEY, JSON.stringify({
         v: 1,
         target: state.target,
+        focusId: state.focusId,
         weeks: state.weeks,
         draft: state.draft,
         records: state.records
@@ -3693,7 +4071,7 @@ window.CET4_CONTENT = {
   /* ============================== 计算 ============================== */
 
   function recordResult(rec) {
-    return M.score({
+    var r = M.score({
       mode: rec.mode,
       parts: rec.parts,
       subjective: rec.subjective,
@@ -3701,12 +4079,40 @@ window.CET4_CONTENT = {
       date: rec.ts,
       note: rec.note
     });
+    /* 带上记录标识：分析页据此定位当前查看的是哪一次 */
+    r.id = rec.id;
+    r.recordId = rec.id;
+    return r;
   }
 
   function allResults() {
     return state.records
       .map(function (r) { return recordResult(r); })
       .sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+  }
+
+  /** 按 id 找到某次记录的结果；未指定或已删除则回退到最新一次 */
+  function focusResult(list) {
+    list = list || allResults();
+    if (!list.length) return null;
+    if (state.focusId) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === state.focusId) return list[i];
+      }
+      /* 记录已被删除：清理失效引用 */
+      state.focusId = null;
+    }
+    return list[list.length - 1];
+  }
+
+  /** 该记录在时间序列中的序号（1 起）与总数，用于「第 N / M 次」标注 */
+  function focusIndex(list, target) {
+    list = list || allResults();
+    var idx = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (target && list[i].id === target.id) { idx = i; break; }
+    }
+    return { index: idx + 1, total: list.length, isLatest: idx === list.length - 1 };
   }
 
   function latestResult() {
@@ -3952,7 +4358,7 @@ window.CET4_CONTENT = {
   }
 
   function recordRow(r) {
-    return '<div class="rec">' +
+    return '<div class="rec rec-click" data-act="analyze" data-id="' + esc(r.id) + '" role="button" tabindex="0" aria-label="查看该次成绩分析">' +
       '<div class="rec-dot" style="background:' + (r.passReached ? 'var(--ok)' : 'var(--bad)') + '"></div>' +
       '<div class="rec-main">' +
       '<div class="rec-title">' + fmtInt(r.total) + ' 分 <span class="badge ghost">' + esc(bandLabel(r.bandKey)) + '</span></div>' +
@@ -4191,13 +4597,40 @@ window.CET4_CONTENT = {
 
   /* ============================== 视图：分析 ============================== */
 
+  /** 分析页顶部的记录切换条：第 N/M 次 + 上一条/下一条 + 回到最新 */
+  function recordSwitcher(list, current, fi) {
+    var html = '<section class="card pad-sm switch-bar">' +
+      '<div class="sb-row">' +
+      '<button class="sb-nav" data-act="focus-step" data-delta="-1" aria-label="查看上一次"' +
+      (fi.index <= 1 ? ' disabled' : '') + '>' + icon('chevron', 'sb-ico flipleft') + '</button>' +
+      '<div class="sb-main">' +
+      '<div class="sb-title">' + esc(fullDate(current.date)) + '</div>' +
+      '<div class="sb-sub">第 ' + fi.index + ' / ' + fi.total + ' 次' +
+      (fi.isLatest ? ' · <b class="up">最新一次</b>' : ' · <b>历史记录</b>') +
+      (current.note ? ' · ' + esc(current.note) : '') + '</div>' +
+      '</div>' +
+      '<div class="sb-score">' + fmtInt(current.total) + '<small>/710</small></div>' +
+      '<button class="sb-nav" data-act="focus-step" data-delta="1" aria-label="查看下一次"' +
+      (fi.isLatest ? ' disabled' : '') + '>' + icon('chevron', 'sb-ico') + '</button>' +
+      '</div>' +
+      (fi.isLatest ? '' :
+        '<button class="btn sm btn-ghost btn-block sb-latest" data-act="focus-latest">回到最新一次</button>') +
+      '</section>';
+    return html;
+  }
+
   function viewAnalysis() {
     var list = allResults();
     if (!list.length) return '<section class="card">' + emptyState() + '</section>';
-    var latest = list[list.length - 1];
+    /* 支持查看历史任意一次：优先 focusId，否则最新 */
+    var latest = focusResult(list);
+    var fi = focusIndex(list, latest);
     var trends = M.trendStats(list);
     var an = A.analyze(latest, { target: state.target, trends: trends, weeks: state.weeks });
     var html = '';
+
+    /* 记录切换条：说明当前看的是哪一次，并可前后切换 */
+    html += recordSwitcher(list, latest, fi);
 
     /* 结论 */
     html += '<section class="card">' +
@@ -4336,7 +4769,7 @@ window.CET4_CONTENT = {
       '<table class="tbl" style="min-width:340px"><thead><tr>' +
       '<th>录入时间</th><th>听力</th><th>阅读</th><th>写作</th><th>翻译</th><th>总分</th></tr></thead><tbody>' +
       list.slice().reverse().map(function (r) {
-        return '<tr><td style="white-space:nowrap">' + esc(fullDate(r.date)) +
+        return '<tr class="tbl-click" data-act="analyze" data-id="' + esc(r.id) + '" tabindex="0" aria-label="查看该次成绩分析"><td style="white-space:nowrap">' + esc(fullDate(r.date)) +
           (r.note ? '<br><span class="muted" style="font-size:10.5px">' + esc(r.note) + '</span>' : '') + '</td>' +
           '<td>' + fmt1(r.sections[1].report) + '</td><td>' + fmt1(r.sections[2].report) + '</td>' +
           '<td>' + fmt1(r.sections[0].report) + '</td><td>' + fmt1(r.sections[3].report) + '</td>' +
@@ -4354,9 +4787,11 @@ window.CET4_CONTENT = {
 
     html += '<section class="card flush"><div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '管理记录</div></div>' +
       list.slice().reverse().map(function (r) {
-        return '<div class="rec">' +
+        var isFocus = r.id === focusResult(list).id;
+        return '<div class="rec rec-click' + (isFocus ? ' is-focus' : '') + '" data-act="analyze" data-id="' + esc(r.id) + '" role="button" tabindex="0" aria-label="查看该次成绩分析">' +
           '<div class="rec-dot" style="background:' + (r.passReached ? 'var(--ok)' : 'var(--bad)') + '"></div>' +
-          '<div class="rec-main"><div class="rec-title">' + fmtInt(r.total) + ' 分 <span class="badge ghost">' + esc(bandLabel(r.bandKey)) + '</span></div>' +
+          '<div class="rec-main"><div class="rec-title">' + fmtInt(r.total) + ' 分 <span class="badge ghost">' + esc(bandLabel(r.bandKey)) + '</span>' +
+          (isFocus ? '<span class="badge ok">正在查看</span>' : '') + '</div>' +
           '<div class="rec-sub">' + esc(fullDate(r.date)) + (r.note ? ' · ' + esc(r.note) : '') + '</div></div>' +
           '<button class="btn sm btn-ghost" data-act="load" data-id="' + esc(r.id) + '">载入</button>' +
           '<button class="rec-del" data-act="delete" data-id="' + esc(r.id) + '" aria-label="删除">' + icon('trash') + '</button>' +
@@ -4579,7 +5014,7 @@ window.CET4_CONTENT = {
   function afterAnalysis() {
     var list = allResults();
     if (!list.length) return;
-    var latest = list[list.length - 1];
+    var latest = focusResult(list);
     var an = A.analyze(latest, { target: state.target, trends: M.trendStats(list), weeks: state.weeks });
 
     mountChart($('#chartRate'), function (w) {
@@ -4747,6 +5182,35 @@ window.CET4_CONTENT = {
       renderView();
       return;
     }
+    /* 点击某条记录 → 查看该次的独立分析 */
+    if (act === 'analyze') {
+      state.focusId = btn.getAttribute('data-id');
+      persist();
+      state.view = 'analysis';
+      renderView();
+      return;
+    }
+    /* 分析页：切到上一条 / 下一条记录 */
+    if (act === 'focus-step') {
+      var delta = Number(btn.getAttribute('data-delta'));
+      var arr = allResults();
+      if (!arr.length) return;
+      var cur = focusResult(arr);
+      var idx = arr.indexOf(cur);
+      var next = arr[idx + delta];
+      if (!next) return;
+      state.focusId = next.id;
+      persist();
+      renderView();
+      return;
+    }
+    /* 回到最新一次 */
+    if (act === 'focus-latest') {
+      state.focusId = null;
+      persist();
+      renderView();
+      return;
+    }
     if (act === 'step') {
       var pk = btn.getAttribute('data-part');
       var dv = Number(btn.getAttribute('data-delta'));
@@ -4784,6 +5248,11 @@ window.CET4_CONTENT = {
       var idx = state.records.findIndex(function (r) { return r.id === id; });
       if (idx >= 0) {
         state.records.splice(idx, 1);
+        /* 正在查看的记录被删除 → 回退最新，避免出现空分析页 */
+        if (state.focusId === id) {
+          state.focusId = null;
+          if (state.view === 'analysis') state.view = 'records';
+        }
         persist();
         renderView();
         toast('已删除该条记录');
@@ -4868,7 +5337,7 @@ window.CET4_CONTENT = {
     if (act === 'copy-report') {
       var l = allResults();
       if (!l.length) return;
-      var latest = l[l.length - 1];
+      var latest = focusResult(l);
       var an = A.analyze(latest, { target: state.target, trends: M.trendStats(l), weeks: state.weeks });
       copyText(A.toText(latest, an, C));
       return;
@@ -4986,6 +5455,18 @@ window.CET4_CONTENT = {
     syncTopbarHeight();
     syncPreviewHeight();
 
+    /* 记录行键盘可访问：Enter / 空格 打开该次分析 */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var btn = e.target.closest && e.target.closest('[data-act="analyze"]');
+      if (!btn) return;
+      /* 避免空格滚动页面 */
+      e.preventDefault();
+      state.focusId = btn.getAttribute('data-id');
+      persist();
+      state.view = 'analysis';
+      renderView();
+    });
     /* 键盘快捷键：1~4 切换视图；录入页聚焦数字框时 ↑/↓ 微调题数 */
     document.addEventListener('keydown', function (e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
@@ -5013,6 +5494,240 @@ window.CET4_CONTENT = {
   } else {
     init();
   }
+})();
+
+
+/*!
+ * pwa.js — 安装引导与离线状态
+ *   1) 注册 Service Worker（离线可用）
+ *   2) 捕获 beforeinstallprompt，提供「安装到手机」按钮
+ *   3) iOS Safari 不支持该事件 → 展示「添加到主屏幕」图文指引
+ *   4) 离线 / 恢复在线时给出状态提示
+ *   5) 已以独立模式运行时不显示任何安装入口
+ */
+(function () {
+  'use strict';
+
+  var LS_DISMISS = 'cet4.install.dismissed';
+  var LS_INSTALLED = 'cet4.install.done';
+
+  function $(sel, root) { return (root || document).querySelector(sel); }
+  function isStandalone() {
+    return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      (window.navigator.standalone === true) ||
+      (document.referrer || '').indexOf('android-app://') === 0;
+  }
+  function isIOS() {
+    var ua = navigator.userAgent || '';
+    return /iPad|iPhone|iPod/.test(ua) ||
+      /* iPadOS 13+ 伪装成 macOS */
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+  function isAndroid() { return /Android/i.test(navigator.userAgent || ''); }
+
+  var deferredPrompt = null;
+  var installed = false;
+
+  /* ---------------- Service Worker ---------------- */
+  function registerSW() {
+    if (!('serviceWorker' in navigator)) return;
+    /* file:// 打开时 SW 不可用，直接跳过（离线单文件版不受影响） */
+    if (location.protocol === 'file:') return;
+    navigator.serviceWorker.register('./sw.js', { scope: './' }).then(function (reg) {
+      /* 有新版本时静默更新，下次打开生效 */
+      reg.addEventListener('updatefound', function () {
+        var w = reg.installing;
+        if (!w) return;
+        w.addEventListener('statechange', function () {
+          if (w.state === 'installed' && navigator.serviceWorker.controller) {
+            window.dispatchEvent(new CustomEvent('cet4:sw-updated'));
+          }
+        });
+      });
+    }).catch(function () { /* 注册失败不影响使用 */ });
+  }
+
+  /* ---------------- 安装按钮 ---------------- */
+  function createInstallUI() {
+    var bar = document.createElement('div');
+    bar.className = 'install-bar';
+    bar.id = 'installBar';
+    bar.innerHTML =
+      '<div class="ib-icon" aria-hidden="true">' +
+        '<svg viewBox="0 0 512 512" width="100%" height="100%">' +
+          '<defs><linearGradient id="ib-bg" x1="0" y1="0" x2="1" y2="1">' +
+          '<stop offset="0%" stop-color="#7b78ff"/><stop offset="52%" stop-color="#5b5bf5"/><stop offset="100%" stop-color="#8b5cf6"/>' +
+          '</linearGradient></defs>' +
+          '<rect x="36" y="36" width="440" height="440" rx="112" fill="url(#ib-bg)"/>' +
+          '<text x="252.6" y="339" text-anchor="middle" fill="#fff" font-size="200" font-weight="800" ' +
+          'letter-spacing="-10" font-family="system-ui,sans-serif">4</text>' +
+        '</svg>' +
+      '</div>' +
+      '<div class="ib-main"><b>安装到手机</b><span id="ibSub">像 App 一样全屏使用</span></div>' +
+      '<button class="ib-btn" id="ibAction" type="button">安装</button>' +
+      '<button class="ib-close" id="ibClose" type="button" aria-label="关闭">&times;</button>';
+    document.body.appendChild(bar);
+
+    $('#ibClose').addEventListener('click', function () {
+      setBarVisible(bar, false);
+      try { localStorage.setItem(LS_DISMISS, String(Date.now())); } catch (e) { /* 忽略 */ }
+    });
+
+    $('#ibAction').addEventListener('click', function () {
+      if (deferredPrompt) {
+        /* Android / Chrome：调用原生安装弹窗 */
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(function (choice) {
+          if (choice && choice.outcome === 'accepted') {
+            try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) { /* 忽略 */ }
+            setBarVisible(bar, false);
+          } else {
+            setBarVisible(bar, false);
+            try { localStorage.setItem(LS_DISMISS, String(Date.now())); } catch (e) { /* 忽略 */ }
+          }
+          deferredPrompt = null;
+        });
+      } else if (isIOS()) {
+        showIOSGuide();
+      } else {
+        showManualGuide();
+      }
+    });
+
+    return bar;
+  }
+
+  /* 统一控制安装条显隐，并同步 body 类名（用于底部预留空间） */
+  function setBarVisible(bar, visible) {
+    if (!bar) return;
+    bar.classList.toggle('show', !!visible);
+    document.body.classList.toggle('has-install-bar', !!visible);
+  }
+
+  /* iOS 添加到主屏幕指引 */
+  function showIOSGuide() {
+    var mask = document.createElement('div');
+    mask.className = 'guide-mask show';
+    mask.innerHTML =
+      '<div class="guide-card">' +
+        '<h3>添加到主屏幕</h3>' +
+        '<ol class="guide-steps">' +
+          '<li>点击 Safari 底部的 <b>分享</b> 按钮 ' +
+            '<svg class="gico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M12 3v12"/><path d="m8 7 4-4 4 4"/><path d="M5 13v6a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-6"/></svg>' +
+          '</li>' +
+          '<li>在菜单里选择 <b>「添加到主屏幕」</b></li>' +
+          '<li>点击右上角 <b>添加</b>，即可像 App 一样打开</li>' +
+        '</ol>' +
+        '<div class="guide-note">iOS 不支持网页直接弹出安装框，需按上述步骤手动添加。</div>' +
+        '<button class="btn btn-primary btn-block" id="guideOk" type="button">我知道了</button>' +
+      '</div>';
+    document.body.appendChild(mask);
+    $('#guideOk').addEventListener('click', function () {
+      mask.classList.remove('show');
+      setTimeout(function () { mask.remove(); }, 260);
+      try { localStorage.setItem(LS_DISMISS, String(Date.now())); } catch (e) { /* 忽略 */ }
+    });
+    mask.addEventListener('click', function (e) {
+      if (e.target === mask) { mask.classList.remove('show'); setTimeout(function () { mask.remove(); }, 260); }
+    });
+  }
+
+  /* 桌面浏览器的通用指引 */
+  function showManualGuide() {
+    var mask = document.createElement('div');
+    mask.className = 'guide-mask show';
+    mask.innerHTML =
+      '<div class="guide-card">' +
+        '<h3>如何安装</h3>' +
+        '<ol class="guide-steps">' +
+          '<li><b>手机</b>：用 Chrome / Edge 打开，点右上角菜单 →「安装应用 / 添加到主屏幕」</li>' +
+          '<li><b>电脑</b>：点击地址栏右侧的安装图标</li>' +
+        '</ol>' +
+        '<div class="guide-note">安装后可以全屏使用、离线打开，数据依然只存在本机。</div>' +
+        '<button class="btn btn-primary btn-block" id="guideOk" type="button">我知道了</button>' +
+      '</div>';
+    document.body.appendChild(mask);
+    $('#guideOk').addEventListener('click', function () {
+      mask.classList.remove('show');
+      setTimeout(function () { mask.remove(); }, 260);
+    });
+    mask.addEventListener('click', function (e) {
+      if (e.target === mask) { mask.classList.remove('show'); setTimeout(function () { mask.remove(); }, 260); }
+    });
+  }
+
+  /* ---------------- 离线提示 ---------------- */
+  function setupOnlineUI() {
+    function update() {
+      var el = $('#offlineHint');
+      if (navigator.onLine) {
+        if (el) el.classList.remove('show');
+      } else {
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'offlineHint';
+          el.className = 'offline-hint';
+          el.innerHTML = '<span class="oh-dot"></span>当前离线，数据仍可正常保存';
+          document.body.appendChild(el);
+        }
+        el.classList.add('show');
+      }
+    }
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    update();
+  }
+
+  /* ---------------- 初始化 ---------------- */
+  function init() {
+    registerSW();
+    setupOnlineUI();
+
+    if (isStandalone()) return;                       /* 已在 App 模式，不打扰 */
+    try {
+      if (localStorage.getItem(LS_INSTALLED) === '1') return;
+      var dismissed = Number(localStorage.getItem(LS_DISMISS) || 0);
+      if (dismissed && Date.now() - dismissed < 14 * 24 * 3600 * 1000) return;  /* 14 天内不再提示 */
+    } catch (e) { /* 隐私模式忽略 */ }
+
+    var bar = createInstallUI();
+
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      setBarVisible(bar, true);
+    });
+
+    window.addEventListener('appinstalled', function () {
+      installed = true;
+      setBarVisible(bar, false);
+      try { localStorage.setItem(LS_INSTALLED, '1'); } catch (e) { /* 忽略 */ }
+    });
+
+    /* iOS 没有 beforeinstallprompt，主动给出入口 */
+    if (isIOS() && !isStandalone()) {
+      setTimeout(function () { setBarVisible(bar, true); }, 1500);
+    } else if (!deferredPrompt) {
+      /* 其他浏览器（含已安装但非 standalone 场景）延迟显示手动入口 */
+      setTimeout(function () {
+        if (!deferredPrompt && !installed) setBarVisible(bar, true);
+      }, 4000);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+  window.__CET4_PWA__ = {
+    isStandalone: isStandalone,
+    isIOS: isIOS,
+    isAndroid: isAndroid,
+    showGuide: function () { if (isIOS()) showIOSGuide(); else showManualGuide(); }
+  };
 })();
 
 </script>

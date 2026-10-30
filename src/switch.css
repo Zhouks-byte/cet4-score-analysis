@@ -1,0 +1,136 @@
+/* ==========================================================================
+   记录切换条 / 可点击记录行
+   —— 支持在分析页查看历史任意一次成绩
+   ========================================================================== */
+
+/* ------------------------------ 记录切换条 ------------------------------ */
+.switch-bar {
+  position: sticky;
+  /* 吸顶在顶栏下方；z-index 需高于普通卡片，但低于底部导航/浮层 */
+  top: calc(var(--topbar-h, 58px) + 6px);
+  z-index: 35;
+  background: color-mix(in srgb, var(--card) 94%, transparent);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-color: var(--line);
+}
+
+.sb-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.sb-nav {
+  width: 32px; height: 32px;
+  flex: none;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-2);
+  color: var(--ink-2);
+  display: grid;
+  place-items: center;
+  transition: background .16s var(--ease), border-color .16s var(--ease), color .16s var(--ease), transform .12s var(--ease);
+}
+.sb-nav:hover:not([disabled]) {
+  background: color-mix(in srgb, var(--brand) 8%, var(--card));
+  border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+  color: var(--brand);
+}
+.sb-nav:active:not([disabled]) { transform: scale(.92); }
+.sb-nav[disabled] { opacity: .3; pointer-events: none; }
+.sb-ico { width: 16px; height: 16px; }
+.sb-ico.flipleft { transform: rotate(90deg); }
+.sb-nav:last-child .sb-ico { transform: rotate(-90deg); }
+
+.sb-main { flex: 1; min-width: 0; }
+.sb-title {
+  font-size: 12.5px;
+  font-weight: 750;
+  color: var(--ink);
+  letter-spacing: -.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-sub {
+  font-size: 10.5px;
+  color: var(--muted);
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb-sub b { color: var(--ink-2); font-weight: 700; }
+.sb-sub b.up { color: var(--ok); }
+
+.sb-score {
+  flex: none;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.6px;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+.sb-score small {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
+  margin-left: 1px;
+}
+
+.sb-latest { margin-top: 9px; }
+
+/* ------------------------------ 可点击记录行 ------------------------------ */
+.rec-click {
+  cursor: pointer;
+  transition: background .16s var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+.rec-click:hover { background: var(--card-2); }
+.rec-click:active { background: var(--card-3); }
+.rec-click:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+  border-radius: 8px;
+}
+/* 正在查看的那一条：左侧色条加宽 + 淡背景，明确当前上下文 */
+.rec-click.is-focus {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+.rec-click.is-focus .rec-dot { width: 4px; }
+
+/* 记录行尾部的删除按钮不应触发"打开分析" */
+.rec-del, .rec-click .btn { flex: none; }
+
+/* 表格行可点击 */
+.tbl-click {
+  cursor: pointer;
+  transition: background .16s var(--ease);
+}
+.tbl-click:hover { background: var(--card-2); }
+.tbl-click:active { background: var(--card-3); }
+.tbl-click:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: -2px;
+}
+
+/* 记录页顶部提示：点任意一行查看该次分析 */
+.rec-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  margin: -4px 0 9px;
+}
+.rec-hint .ico { width: 13px; height: 13px; color: var(--brand); opacity: .85; }
+
+/* 窄屏压缩切换条 */
+@media (max-width: 380px) {
+  .sb-score { font-size: 15px; }
+  .sb-title { font-size: 12px; }
+  .sb-nav { width: 30px; height: 30px; }
+}

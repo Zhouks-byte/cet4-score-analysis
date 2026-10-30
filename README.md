@@ -2,6 +2,7 @@
 
 一个面向手机 / 平板的**大学英语四级（CET-4）成绩录入、赋分估算与针对性分析**网页工具。
 纯前端、单文件、零依赖、零后端，数据只保存在本机浏览器。
+支持安装为手机 App（PWA）：离线可用、全屏运行、可添加到主屏幕。
 
 线上地址：**https://zhouks-byte.github.io/cet4-score-analysis/**
 
@@ -88,6 +89,29 @@
 - **回归保护**：新增 `tests/tooltip.test.js`（31 项断言），自动校验令牌存在、禁止再用 `--ink` 作浮层背景、
   对比度阈值与排版规则，防止以后改配色时再次退化。
 
+### 8. 查看历史任意一次的分析（v5）
+此前分析页只分析**最新一次**（硬编码 `list[length-1]`）。现已支持任意历史记录：
+
+- **三个入口都能进入某次分析**：记录页的列表行、记录页的表格行、首页「最近记录」行，点击即打开该次分析；
+- **分析页顶部记录切换条**：显示该次时间、第 N / M 次、备注与该次分数，并提供上一条/下一条箭头
+  （**边界处自动禁用**），以及非最新时出现的「回到最新一次」按钮；
+- **整页内容跟随切换**：诊断结论、关键发现、得分率图表、题型明细、提分路径、复制报告全部指向当前查看的那次；
+- **状态可持久化**：刷新后仍记住查看目标（再次进入分析页仍是同一条）；记录被删除时自动回退最新，不留空页；
+- **可访问性**：记录行支持键盘 Tab 聚焦与 Enter / 空格打开，并标记「正在查看」；
+- **顺带修复文案 bug**：「比目标高 079 分」的多余前导零（原为 `Math.round(...) + ''` 拼接残留）。
+
+### 9. 手机端应用（PWA，v5）
+不只是网页，可安装成手机 App：
+
+- **Service Worker 离线缓存**：断网后仍能打开并正常使用（实测断网可载入示例、正常出图）；
+  导航请求 network-first + 3.5s 超时回落，静态资源 stale-while-revalidate；
+- **安装引导**：Android/Chrome 捕获 `beforeinstallprompt` 弹出原生安装；iOS 自动展示
+  「分享 → 添加到主屏幕」图文指引；已安装（standalone）时自动隐藏所有安装入口；
+- **全屏独立运行**：`display: standalone`、状态栏与安全区适配、`display_override`；
+- **manifest 完善**：`id` / `scope` / `shortcuts`（录入、分析、记录三个快捷方式）/ maskable 图标；
+- **离线提示**：断网时顶部显示状态条，数据照常保存到本机；
+- **测试**：`tests/pwa.test.js`（60 项断言）+ `qa/pwa-live.mjs`（18 项真实浏览器验证，含断网重开）。
+
 ---
 
 ## 目录结构
@@ -100,6 +124,9 @@ cet4-score-analysis/
 │   ├── model.js            # 赋分引擎（纯计算，可 Node 单测）
 │   ├── content.js          # 文案库（分数段、评分档次、技巧、计划模板）
 │   ├── charts.js           # 手写 SVG 图表库 v2（line/bar/hbars/donut/gauge/sparkline）
+│   ├── pwa.js              # 安装引导 / 离线状态（PWA）
+│   ├── pwa.css             # 安装条 / 图文指引 / 独立模式样式
+│   ├── sw.js               # Service Worker（离线缓存）
 │   ├── analysis.js         # 诊断与建议引擎
 │   ├── app.js              # 交互与渲染
 │   └── styles.css          # 设计系统（设计令牌 + 移动优先 + 深色模式）
@@ -114,13 +141,18 @@ cet4-score-analysis/
 ├── tests/
 │   ├── model.test.js       # 赋分引擎单元测试（90 项断言）
 │   ├── charts.test.js      # 图表库单元测试（112 项断言）
-│   └── tooltip.test.js     # 浮层配色对比度测试（31 项断言）
+│   ├── tooltip.test.js     # 浮层配色对比度测试（31 项断言）
+│   ├── pwa.test.js         # PWA 可安装性与离线能力（60 项断言）
+│   └── focus.test.js       # 历史记录查看功能回归（32 项断言）
 └── qa/
     ├── cdp.mjs             # 无依赖 CDP 浏览器 QA（53 项断言 + 10 张截图）
     ├── overlap.mjs         # 按钮遮挡/重叠/间距检测器（5 视口 × 4 视图）
     ├── icon-compare.mjs    # 图标多方案对比图（含 16/24/32/64px 缩放检查）
     ├── icon-bbox.mjs       # 图标元素包围盒实测（校正光学居中）
     ├── tip-fixed.mjs       # 浮层配色实拍（深色/浅色 × 折线/柱状/环形）
+    ├── focus-history.mjs   # 历史记录分析功能验证（22 项）
+    ├── focus-demo.mjs      # 逐条记录切换一致性演示
+    ├── pwa-live.mjs        # PWA 真实浏览器验证（含断网重开）
     ├── probe-page.mjs      # 单页冒烟探针
     ├── shots-light.mjs     # 浅色模式逐屏截图
     └── shots-entry.mjs     # 录入页侧栏布局检查
@@ -136,6 +168,8 @@ node tools/build.mjs
 node tests/model.test.js
 node tests/charts.test.js
 node tests/tooltip.test.js
+node tests/pwa.test.js
+node tests/focus.test.js
 
 # 浏览器端自动化 QA（需本机有 Edge 或 Chrome）
 node qa/cdp.mjs "file:///<绝对路径>/dist/index.html" qa/out

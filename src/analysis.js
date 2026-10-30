@@ -101,9 +101,9 @@
         '你当前 ' + result.totalInt + ' 分，目标 ' + target + ' 分。按分值结构，这大约相当于 ' +
         countItems(need) + '。优先攻克单位收益高且正确率低的题型，提分效率最高。');
     } else {
+      var over = Math.max(0, result.totalInt - target);
       push('good', '✓', '已达到 ' + target + ' 分目标',
-        '当前 ' + result.totalInt + ' 分，比目标高 ' + Math.round(-result.passGap < 0 ? 0 : 0) + '' +
-        (result.totalInt >= target ? (result.totalInt - target) : 0) + ' 分。建议把目标上移一档，把训练重心放在稳定性和主观题上。');
+        '当前 ' + result.totalInt + ' 分，比目标高 ' + over + ' 分。建议把目标上移一档，把训练重心放在稳定性和主观题上。');
     }
 
     // 2. 客观题 0 分 / 缺考规则

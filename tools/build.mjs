@@ -17,7 +17,7 @@ function read(rel) {
   return readFileSync(p, 'utf8').replace(/^\uFEFF/, '');
 }
 
-const css = read('src/styles.css');
+const css = read('src/styles.css') + '\n\n' + read('src/pwa.css') + '\n\n' + read('src/switch.css');
 const js = [
   'src/model.js',
   'src/content.js',
@@ -33,13 +33,17 @@ const safeCss = css.replace(/<\/style>/gi, '<\\/style>');
 const tpl = read('tools/index.template.html');
 const html = tpl
   .replace('/*__INLINE_CSS__*/', () => safeCss)
-  .replace('/*__INLINE_JS__*/', () => safeJs);
+  .replace('/*__INLINE_JS__*/', () => safeJs)
+  .replace('/*__INLINE_PWA_JS__*/', () => {
+    const pwa = read('src/pwa.js').replace(/<\/script>/gi, '<\\/script>');
+    return pwa;
+  });
 
 mkdirSync(join(root, 'dist'), { recursive: true });
 const finalHtml = html.replace(/^\uFEFF/, '');
 writeFileSync(join(root, 'dist', 'index.html'), finalHtml, 'utf8');
 
-/* 复制图标与 manifest 到 dist，保证 dist/ 可独立托管 */
+/* 复制图标、manifest 与 Service Worker 到 dist，保证 dist/ 可独立托管为 PWA */
 const assets = [
   'assets/icon.svg',
   'assets/favicon.svg',
@@ -54,11 +58,23 @@ const assets = [
   'assets/apple-touch-icon.png',
   'manifest.webmanifest'
 ];
+/* 源目录与输出目录不同的文件单独处理 */
+const fromSrc = [
+  { from: 'src/sw.js', to: 'sw.js' }
+];
 let copied = 0;
 for (const rel of assets) {
   const from = join(root, rel);
   if (!existsSync(from)) { console.warn('  ! 缺少 ' + rel); continue; }
   const to = join(root, 'dist', rel);
+  mkdirSync(dirname(to), { recursive: true });
+  writeFileSync(to, readFileSync(from));
+  copied++;
+}
+for (const item of fromSrc) {
+  const from = join(root, item.from);
+  if (!existsSync(from)) { console.warn('  ! 缺少 ' + item.from); continue; }
+  const to = join(root, 'dist', item.to);
   mkdirSync(dirname(to), { recursive: true });
   writeFileSync(to, readFileSync(from));
   copied++;

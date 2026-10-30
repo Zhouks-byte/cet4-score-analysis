@@ -73,6 +73,8 @@
     weeks: null,
     records: [],
     draft: null,
+    /* 当前正在查看分析的记录 id；null 表示跟随最新一次 */
+    focusId: null,
     chartMode: 'total',
     seriesOn: { listening: true, reading: true, writing: true, translation: true },
     compareId: null
@@ -106,6 +108,7 @@
         }
         if (d && isFinite(d.target)) state.target = d.target;
         if (d && (d.weeks === null || isFinite(d.weeks))) state.weeks = d.weeks;
+        if (d && typeof d.focusId === 'string') state.focusId = d.focusId;
         if (d && d.draft) state.draft = d.draft;
       } catch (e) { /* ignore */ }
     }
@@ -117,6 +120,7 @@
       localStorage.setItem(KEY, JSON.stringify({
         v: 1,
         target: state.target,
+        focusId: state.focusId,
         weeks: state.weeks,
         draft: state.draft,
         records: state.records
@@ -127,7 +131,7 @@
   /* ============================== 计算 ============================== */
 
   function recordResult(rec) {
-    return M.score({
+    var r = M.score({
       mode: rec.mode,
       parts: rec.parts,
       subjective: rec.subjective,
@@ -135,12 +139,40 @@
       date: rec.ts,
       note: rec.note
     });
+    /* 带上记录标识：分析页据此定位当前查看的是哪一次 */
+    r.id = rec.id;
+    r.recordId = rec.id;
+    return r;
   }
 
   function allResults() {
     return state.records
       .map(function (r) { return recordResult(r); })
       .sort(function (a, b) { return new Date(a.date) - new Date(b.date); });
+  }
+
+  /** 按 id 找到某次记录的结果；未指定或已删除则回退到最新一次 */
+  function focusResult(list) {
+    list = list || allResults();
+    if (!list.length) return null;
+    if (state.focusId) {
+      for (var i = 0; i < list.length; i++) {
+        if (list[i].id === state.focusId) return list[i];
+      }
+      /* 记录已被删除：清理失效引用 */
+      state.focusId = null;
+    }
+    return list[list.length - 1];
+  }
+
+  /** 该记录在时间序列中的序号（1 起）与总数，用于「第 N / M 次」标注 */
+  function focusIndex(list, target) {
+    list = list || allResults();
+    var idx = -1;
+    for (var i = 0; i < list.length; i++) {
+      if (target && list[i].id === target.id) { idx = i; break; }
+    }
+    return { index: idx + 1, total: list.length, isLatest: idx === list.length - 1 };
   }
 
   function latestResult() {
@@ -386,7 +418,7 @@
   }
 
   function recordRow(r) {
-    return '<div class="rec">' +
+    return '<div class="rec rec-click" data-act="analyze" data-id="' + esc(r.id) + '" role="button" tabindex="0" aria-label="查看该次成绩分析">' +
       '<div class="rec-dot" style="background:' + (r.passReached ? 'var(--ok)' : 'var(--bad)') + '"></div>' +
       '<div class="rec-main">' +
       '<div class="rec-title">' + fmtInt(r.total) + ' 分 <span class="badge ghost">' + esc(bandLabel(r.bandKey)) + '</span></div>' +
@@ -625,13 +657,40 @@
 
   /* ============================== 视图：分析 ============================== */
 
+  /** 分析页顶部的记录切换条：第 N/M 次 + 上一条/下一条 + 回到最新 */
+  function recordSwitcher(list, current, fi) {
+    var html = '<section class="card pad-sm switch-bar">' +
+      '<div class="sb-row">' +
+      '<button class="sb-nav" data-act="focus-step" data-delta="-1" aria-label="查看上一次"' +
+      (fi.index <= 1 ? ' disabled' : '') + '>' + icon('chevron', 'sb-ico flipleft') + '</button>' +
+      '<div class="sb-main">' +
+      '<div class="sb-title">' + esc(fullDate(current.date)) + '</div>' +
+      '<div class="sb-sub">第 ' + fi.index + ' / ' + fi.total + ' 次' +
+      (fi.isLatest ? ' · <b class="up">最新一次</b>' : ' · <b>历史记录</b>') +
+      (current.note ? ' · ' + esc(current.note) : '') + '</div>' +
+      '</div>' +
+      '<div class="sb-score">' + fmtInt(current.total) + '<small>/710</small></div>' +
+      '<button class="sb-nav" data-act="focus-step" data-delta="1" aria-label="查看下一次"' +
+      (fi.isLatest ? ' disabled' : '') + '>' + icon('chevron', 'sb-ico') + '</button>' +
+      '</div>' +
+      (fi.isLatest ? '' :
+        '<button class="btn sm btn-ghost btn-block sb-latest" data-act="focus-latest">回到最新一次</button>') +
+      '</section>';
+    return html;
+  }
+
   function viewAnalysis() {
     var list = allResults();
     if (!list.length) return '<section class="card">' + emptyState() + '</section>';
-    var latest = list[list.length - 1];
+    /* 支持查看历史任意一次：优先 focusId，否则最新 */
+    var latest = focusResult(list);
+    var fi = focusIndex(list, latest);
     var trends = M.trendStats(list);
     var an = A.analyze(latest, { target: state.target, trends: trends, weeks: state.weeks });
     var html = '';
+
+    /* 记录切换条：说明当前看的是哪一次，并可前后切换 */
+    html += recordSwitcher(list, latest, fi);
 
     /* 结论 */
     html += '<section class="card">' +
@@ -770,7 +829,7 @@
       '<table class="tbl" style="min-width:340px"><thead><tr>' +
       '<th>录入时间</th><th>听力</th><th>阅读</th><th>写作</th><th>翻译</th><th>总分</th></tr></thead><tbody>' +
       list.slice().reverse().map(function (r) {
-        return '<tr><td style="white-space:nowrap">' + esc(fullDate(r.date)) +
+        return '<tr class="tbl-click" data-act="analyze" data-id="' + esc(r.id) + '" tabindex="0" aria-label="查看该次成绩分析"><td style="white-space:nowrap">' + esc(fullDate(r.date)) +
           (r.note ? '<br><span class="muted" style="font-size:10.5px">' + esc(r.note) + '</span>' : '') + '</td>' +
           '<td>' + fmt1(r.sections[1].report) + '</td><td>' + fmt1(r.sections[2].report) + '</td>' +
           '<td>' + fmt1(r.sections[0].report) + '</td><td>' + fmt1(r.sections[3].report) + '</td>' +
@@ -788,9 +847,11 @@
 
     html += '<section class="card flush"><div class="card-head" style="padding:16px 16px 0"><div class="card-title">' + icon('clock') + '管理记录</div></div>' +
       list.slice().reverse().map(function (r) {
-        return '<div class="rec">' +
+        var isFocus = r.id === focusResult(list).id;
+        return '<div class="rec rec-click' + (isFocus ? ' is-focus' : '') + '" data-act="analyze" data-id="' + esc(r.id) + '" role="button" tabindex="0" aria-label="查看该次成绩分析">' +
           '<div class="rec-dot" style="background:' + (r.passReached ? 'var(--ok)' : 'var(--bad)') + '"></div>' +
-          '<div class="rec-main"><div class="rec-title">' + fmtInt(r.total) + ' 分 <span class="badge ghost">' + esc(bandLabel(r.bandKey)) + '</span></div>' +
+          '<div class="rec-main"><div class="rec-title">' + fmtInt(r.total) + ' 分 <span class="badge ghost">' + esc(bandLabel(r.bandKey)) + '</span>' +
+          (isFocus ? '<span class="badge ok">正在查看</span>' : '') + '</div>' +
           '<div class="rec-sub">' + esc(fullDate(r.date)) + (r.note ? ' · ' + esc(r.note) : '') + '</div></div>' +
           '<button class="btn sm btn-ghost" data-act="load" data-id="' + esc(r.id) + '">载入</button>' +
           '<button class="rec-del" data-act="delete" data-id="' + esc(r.id) + '" aria-label="删除">' + icon('trash') + '</button>' +
@@ -1013,7 +1074,7 @@
   function afterAnalysis() {
     var list = allResults();
     if (!list.length) return;
-    var latest = list[list.length - 1];
+    var latest = focusResult(list);
     var an = A.analyze(latest, { target: state.target, trends: M.trendStats(list), weeks: state.weeks });
 
     mountChart($('#chartRate'), function (w) {
@@ -1181,6 +1242,35 @@
       renderView();
       return;
     }
+    /* 点击某条记录 → 查看该次的独立分析 */
+    if (act === 'analyze') {
+      state.focusId = btn.getAttribute('data-id');
+      persist();
+      state.view = 'analysis';
+      renderView();
+      return;
+    }
+    /* 分析页：切到上一条 / 下一条记录 */
+    if (act === 'focus-step') {
+      var delta = Number(btn.getAttribute('data-delta'));
+      var arr = allResults();
+      if (!arr.length) return;
+      var cur = focusResult(arr);
+      var idx = arr.indexOf(cur);
+      var next = arr[idx + delta];
+      if (!next) return;
+      state.focusId = next.id;
+      persist();
+      renderView();
+      return;
+    }
+    /* 回到最新一次 */
+    if (act === 'focus-latest') {
+      state.focusId = null;
+      persist();
+      renderView();
+      return;
+    }
     if (act === 'step') {
       var pk = btn.getAttribute('data-part');
       var dv = Number(btn.getAttribute('data-delta'));
@@ -1218,6 +1308,11 @@
       var idx = state.records.findIndex(function (r) { return r.id === id; });
       if (idx >= 0) {
         state.records.splice(idx, 1);
+        /* 正在查看的记录被删除 → 回退最新，避免出现空分析页 */
+        if (state.focusId === id) {
+          state.focusId = null;
+          if (state.view === 'analysis') state.view = 'records';
+        }
         persist();
         renderView();
         toast('已删除该条记录');
@@ -1302,7 +1397,7 @@
     if (act === 'copy-report') {
       var l = allResults();
       if (!l.length) return;
-      var latest = l[l.length - 1];
+      var latest = focusResult(l);
       var an = A.analyze(latest, { target: state.target, trends: M.trendStats(l), weeks: state.weeks });
       copyText(A.toText(latest, an, C));
       return;
@@ -1420,6 +1515,18 @@
     syncTopbarHeight();
     syncPreviewHeight();
 
+    /* 记录行键盘可访问：Enter / 空格 打开该次分析 */
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var btn = e.target.closest && e.target.closest('[data-act="analyze"]');
+      if (!btn) return;
+      /* 避免空格滚动页面 */
+      e.preventDefault();
+      state.focusId = btn.getAttribute('data-id');
+      persist();
+      state.view = 'analysis';
+      renderView();
+    });
     /* 键盘快捷键：1~4 切换视图；录入页聚焦数字框时 ↑/↓ 微调题数 */
     document.addEventListener('keydown', function (e) {
       if (e.metaKey || e.ctrlKey || e.altKey) return;

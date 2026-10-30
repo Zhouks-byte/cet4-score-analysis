@@ -7,7 +7,7 @@
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
   "background_color": "#f6f7fb",
   "theme_color": "#5b5bf5",
   "categories": [
@@ -37,6 +37,36 @@
       "src": "assets/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml"
+    }
+  ],
+  "id": "./",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone",
+    "minimal-ui"
+  ],
+  "prefer_related_applications": false,
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "shortcuts": [
+    {
+      "name": "录入成绩",
+      "short_name": "录入",
+      "url": "./#entry",
+      "description": "快速录入一次四级成绩"
+    },
+    {
+      "name": "查看分析",
+      "short_name": "分析",
+      "url": "./#analysis",
+      "description": "查看针对性提分建议"
+    },
+    {
+      "name": "历史记录",
+      "short_name": "记录",
+      "url": "./#records",
+      "description": "查看全部成绩记录"
     }
   ]
 }
